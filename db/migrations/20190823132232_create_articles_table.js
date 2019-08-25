@@ -6,7 +6,7 @@ exports.up = function(knex) {
       .primary()
       .notNullable();
     articlesTable.string("title").notNullable();
-    articlesTable.string("body").notNullable();
+    articlesTable.text("body").notNullable();
     articlesTable
       .integer("votes")
       .defaultTo(0)
