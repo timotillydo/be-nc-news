@@ -44,3 +44,32 @@ describe("formatDates", () => {
     expect(actualResult).to.not.equal(expectedResult);
   });
 });
+
+describe("makeRefObj", () => {
+  it("should return an empty object when passed an empty array", () => {
+    expect(makeRefObj([])).to.eql({});
+  });
+  it("should return an object with a key and value corressponding to the title and id keys from the one object in the array passed to the function", () => {
+    const input = [{ title: "This is a title", article_id: 1 }];
+    const refKey = "title";
+    const refValue = "article_id";
+    const actualResult = makeRefObj(input, refKey, refValue);
+    expect(actualResult).to.eql({ "This is a title": 1 });
+  });
+  it("should return a reference object when passed an array of multiple objects and the desired refKey and refValue values", () => {
+    const input = [
+      { title: "Living in the shadow of a great man", article_id: 1 },
+      { title: "Eight pug gifs that remind me of mitch", article_id: 2 },
+      { title: "Student SUES Mitch!", article_id: 3 }
+    ];
+    const refKey = "title";
+    const refValue = "article_id";
+    const actualResult = makeRefObj(input, refKey, refValue);
+    const expectedResult = {
+      "Living in the shadow of a great man": 1,
+      "Eight pug gifs that remind me of mitch": 2,
+      "Student SUES Mitch!": 3
+    };
+    expect(actualResult).to.eql(expectedResult);
+  });
+});

@@ -14,3 +14,10 @@ exports.formatDates = list => {
   });
   return formattedArray;
 };
+
+exports.makeRefObj = (list, refKey, refValue) => {
+  if (!list.length) return {};
+  const newRefObj = {};
+  list.forEach(obj => (newRefObj[obj[refKey]] = obj[refValue]));
+  return newRefObj;
+};
