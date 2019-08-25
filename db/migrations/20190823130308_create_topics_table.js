@@ -5,7 +5,7 @@ exports.up = function(knex) {
       .string("slug")
       .primary()
       .notNullable();
-    topicsTable.string("description").notNullable();
+    topicsTable.text("description").notNullable();
   });
 };
 
