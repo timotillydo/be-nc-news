@@ -43,6 +43,25 @@ describe("/api", () => {
         });
     });
   });
+  describe("/articles/:article_id", () => {
+    it("returns a status code: 200 and an array of article requested", () => {
+      return request
+        .get("/api/articles/1")
+        .expect(200)
+        .then(({ body: { article } }) => {
+          expect(article[0]).to.have.keys(
+            "author",
+            "title",
+            "article_id",
+            "body",
+            "topic",
+            "created_at",
+            "votes",
+            "comment_count"
+          );
+        });
+    });
+  });
 });
 
 describe("error handling request to invalid/unbuilt endpoint", () => {
