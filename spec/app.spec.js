@@ -32,6 +32,17 @@ describe("/api", () => {
           expect(user[0]).to.have.keys("username", "name", "avatar_url");
         });
     });
+    it("returns a status code: 404 and a custom error message", () => {
+      return request
+        .get("/api/users/albert_einstein")
+        .expect(404)
+        .then(({ body: { errMsg } }) => {
+          expect(errMsg).to.equal(
+            "Error 404: Username albert_einstein Not Found"
+          );
+        });
+    });
+  });
 });
 
 describe("error handling request to invalid/unbuilt endpoint", () => {

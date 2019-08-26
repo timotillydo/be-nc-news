@@ -5,8 +5,11 @@ exports.selectUserByUsername = username => {
     .select("*")
     .where("username", username)
     .then(user => {
-      if (!user.length)
-        next({ status: 404, errMsg: "Error 404: Resource Not Found" });
-      else return user;
+      if (!user.length) {
+        return Promise.reject({
+          status: 404,
+          errMsg: `Error 404: Username ${username} Not Found`
+        });
+      } else return user;
     });
 };
