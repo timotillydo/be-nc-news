@@ -23,6 +23,15 @@ describe("/api", () => {
       });
     });
   });
+  describe("/users/:username", () => {
+    it("returns a status code: 200 and an array of one user by their username", () => {
+      return request
+        .get("/api/users/butter_bridge")
+        .expect(200)
+        .then(({ body: { user } }) => {
+          expect(user[0]).to.have.keys("username", "name", "avatar_url");
+        });
+    });
 });
 
 describe("error handling request to invalid/unbuilt endpoint", () => {
