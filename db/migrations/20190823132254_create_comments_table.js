@@ -17,7 +17,7 @@ exports.up = function(knex) {
       .integer("votes")
       .defaultTo(0)
       .notNullable();
-    commentsTable.timestamp("created_at");
+    commentsTable.timestamp("created_at").defaultTo(knex.fn.now());
     commentsTable.text("body").notNullable();
   });
 };

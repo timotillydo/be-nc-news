@@ -25,6 +25,12 @@ exports.updateArticleById = (article_id, data) => {
     .increment("votes", newVotes)
     .returning("*")
     .then(article => {
+      if (!article.length) {
+        return Promise.reject({
+          status: 404,
+          errMsg: `Error 404: Article_id ${article_id} Not Found`
+        });
+      }
       return article[0];
     });
   // .catch(err => console.log(err));

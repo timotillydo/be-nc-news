@@ -7,7 +7,7 @@ const { expect } = chai;
 const connection = require("../db/connection");
 
 describe("/api", () => {
-  // beforeEach(() => connection.seed.run());
+  beforeEach(() => connection.seed.run());
   after(() => connection.destroy());
 
   describe("GET requests", () => {
@@ -98,6 +98,44 @@ describe("/api", () => {
             expect(updatedArticle.votes).to.equal(122);
           });
       });
+      it("returns a status code: 404 and error message when patching a valid article_id that doesn't exist in the table", () => {
+        return request
+          .patch("/api/articles/888888")
+          .send({ inc_votes: 13 })
+          .expect(404)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 404: Article_id 888888 Not Found");
+          });
+      });
+      it("returns a status code: 400 and error message when requesting an invalid article_id", () => {
+        return request
+          .patch("/api/articles/invalidId")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+    });
+  });
+  describe("POST requests", () => {
+    describe("/articles/:article_id/comments", () => {
+      it.only("returns status code: 201 and the new row that has been posted", () => {
+        return request
+          .post("/api/articles/1/comments")
+          .send({ username: "lurker", body: "that article was great!" })
+          .expect(201)
+          .then(({ body: { comment } }) => {
+            expect(comment).to.have.keys(
+              "body",
+              "comment_id",
+              "author",
+              "article_id",
+              "votes",
+              "created_at"
+            );
+          });
+      });
+      it(/*ERROR HANDLING!!!!!*/);
     });
   });
 });
