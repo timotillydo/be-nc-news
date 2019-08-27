@@ -28,7 +28,7 @@ describe("/api", () => {
           .get("/api/users/butter_bridge")
           .expect(200)
           .then(({ body: { user } }) => {
-            expect(user[0]).to.have.keys("username", "name", "avatar_url");
+            expect(user).to.have.keys("username", "name", "avatar_url");
           });
       });
       it("returns a status code: 404 and a custom error message", () => {
@@ -48,7 +48,7 @@ describe("/api", () => {
           .get("/api/articles/1")
           .expect(200)
           .then(({ body: { article } }) => {
-            expect(article[0]).to.have.keys(
+            expect(article).to.have.keys(
               "author",
               "title",
               "article_id",
@@ -74,6 +74,28 @@ describe("/api", () => {
           .expect(400)
           .then(({ body: { errMsg } }) => {
             expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+    });
+  });
+  describe("PATCH requests", () => {
+    describe("/articles/:article_id", () => {
+      it("returns status code: 200 and the updated article when request sent (with update data in body) to update an article by it's id", () => {
+        return request
+          .patch("/api/articles/1")
+          .send({ inc_votes: 22 })
+          .expect(200)
+          .then(({ body: { updatedArticle } }) => {
+            expect(updatedArticle).to.have.keys(
+              "article_id",
+              "title",
+              "body",
+              "votes",
+              "topic",
+              "author",
+              "created_at"
+            );
+            expect(updatedArticle.votes).to.equal(122);
           });
       });
     });

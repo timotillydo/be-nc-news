@@ -10,6 +10,6 @@ exports.selectUserByUsername = username => {
           status: 404,
           errMsg: `Error 404: Username ${username} Not Found`
         });
-      } else return user;
+      } else return user[0];
     });
 };

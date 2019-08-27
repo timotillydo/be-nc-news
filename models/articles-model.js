@@ -14,7 +14,18 @@ exports.selectArticleById = article_id => {
           errMsg: `Error 404: Article_id ${article_id} Not Found`
         });
       }
-      return article;
+      return article[0];
+    });
+};
+
+exports.updateArticleById = (article_id, data) => {
+  const newVotes = data.inc_votes;
+  return connection("articles")
+    .where("article_id", "=", article_id)
+    .increment("votes", newVotes)
+    .returning("*")
+    .then(article => {
+      return article[0];
     });
   // .catch(err => console.log(err));
 };
