@@ -1,3 +1,4 @@
 const { customErrorHandler } = require("./custom-errors");
+const { psqlErrorHandler } = require("./psql-errors");
 
-module.exports = { customErrorHandler };
+module.exports = { customErrorHandler, psqlErrorHandler };
