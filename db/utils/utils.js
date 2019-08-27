@@ -30,7 +30,6 @@ exports.formatComments = (comments, articleRef) => {
     for (let key in comment) {
       if (key === "created_by") {
         newComment.author = comment[key];
-        delete comment.created_by;
       } else if (key === "belongs_to") {
         newComment.article_id = articleRef[comment[key]];
       } else if (key === "created_at") {

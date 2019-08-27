@@ -28,12 +28,6 @@ describe("formatDates", () => {
       { created_at: 1542284514171 }
     ];
     const actualResult = formatDates(inputArray);
-    const inputCopy = [
-      { created_at: 1416140514171 },
-      { created_at: 1403143051 },
-      { created_at: 1203143051 },
-      { created_at: 1542284514171 }
-    ];
     const expectedResult = [
       { created_at: new Date(1416140514171) },
       { created_at: new Date(1403143051) },
@@ -41,7 +35,6 @@ describe("formatDates", () => {
       { created_at: new Date(1542284514171) }
     ];
     expect(actualResult).to.eql(expectedResult);
-    expect(actualResult).to.not.equal(expectedResult);
   });
 });
 
