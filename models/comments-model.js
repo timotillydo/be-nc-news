@@ -11,4 +11,5 @@ exports.insertComment = (article_id, newComment) => {
     .then(newComment => {
       return newComment[0];
     });
+  // .catch(err => console.log(err));
 };

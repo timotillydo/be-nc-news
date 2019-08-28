@@ -125,7 +125,7 @@ describe("/api", () => {
             expect(errMsg).to.equal("Error 400: Malformed Body");
           });
       });
-      it("returns a status code: 400 and an error message when a request is sent  to a valid path where the body has a correct column header but invalid data", () => {
+      it("returns a status code: 400 and an error message when a request is sent  to a valid path where the body has a correct column header key but invalid data", () => {
         return request
           .patch("/api/articles/1")
           .send({ inc_votes: "hello this is invalid data" })
@@ -144,7 +144,7 @@ describe("/api", () => {
       });
     });
   });
-  describe.only("POST requests", () => {
+  describe("POST requests", () => {
     describe("/articles/:article_id/comments", () => {
       it("returns status code: 201 and the new row that has been posted", () => {
         return request
@@ -160,8 +160,58 @@ describe("/api", () => {
               "votes",
               "created_at"
             );
-            expect(comment.username).to.equal("lurker");
+            expect(comment.author).to.equal("lurker");
             expect(comment.body).to.equal("that article was great!");
+          });
+      });
+      it("returns a status code: 404 and error message when request sent for a valid id but the article_id doesn't exist", () => {
+        return request
+          .post("/api/articles/12345/comments")
+          .send({ username: "lurker", body: "that article was great!" })
+          .expect(404)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent for an invalid article_id datatype", () => {
+        return request
+          .post("/api/articles/invalidId/comments")
+          .send({ username: "lurker", body: "that article was great!" })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent without body", () => {
+        return request
+          .post("/api/articles/1/comments")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent with a body with an invalid column header key", () => {
+        return request
+          .post("/api/articles/1/comments")
+          .send({
+            username: "lurker",
+            invalid_column: "that article was great!"
+          })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent with a body with an valid column header key but the datatype is invalid for that column", () => {
+        return request
+          .post("/api/articles/1/comments")
+          .send({
+            username: 123456789,
+            invalid_column: "that article was great!"
+          })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
           });
       });
     });
