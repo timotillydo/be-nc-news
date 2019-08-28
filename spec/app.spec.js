@@ -58,6 +58,7 @@ describe("/api", () => {
               "votes",
               "comment_count"
             );
+            expect(article.comment_count).to.equal("13");
           });
       });
       it("returns a status code: 404 and error message when requesting a valid article_id that doesn't exist in the table", () => {
@@ -74,6 +75,26 @@ describe("/api", () => {
           .expect(400)
           .then(({ body: { errMsg } }) => {
             expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+    });
+    describe("/articles/:article_id/comments", () => {
+      it("returns a status code: 200 and an array of all comments for a valid article_id", () => {
+        return request
+          .get("/api/articles/1/comments")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.have.length(13);
+            comments.forEach(comment => {
+              expect(comment).to.have.keys(
+                "comment_id",
+                "votes",
+                "created_at",
+                "author",
+                "body",
+                "article_id"
+              );
+            });
           });
       });
     });

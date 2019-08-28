@@ -13,3 +13,13 @@ exports.insertComment = (article_id, newComment) => {
     });
   // .catch(err => console.log(err));
 };
+
+exports.selectAllCommentsByArticleId = article_id => {
+  return connection("comments")
+    .select("*")
+    .where("article_id", article_id)
+    .then(comments => {
+      // console.log(comments);
+      return comments;
+    });
+};

@@ -2,7 +2,10 @@ const {
   selectArticleById,
   updateArticleById
 } = require("../models/articles-model");
-const { insertComment } = require("../models/comments-model");
+const {
+  insertComment,
+  selectAllCommentsByArticleId
+} = require("../models/comments-model");
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
@@ -29,6 +32,15 @@ exports.postCommentByArticleId = (req, res, next) => {
   insertComment(article_id, newComment)
     .then(comment => {
       res.status(201).send({ comment });
+    })
+    .catch(next);
+};
+
+exports.getAllCommentsByArticleId = (req, res, next) => {
+  const { article_id } = req.params;
+  selectAllCommentsByArticleId(article_id)
+    .then(comments => {
+      res.status(200).send({ comments });
     })
     .catch(next);
 };
