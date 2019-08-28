@@ -20,18 +20,22 @@ exports.selectArticleById = article_id => {
 
 exports.updateArticleById = (article_id, data) => {
   const newVotes = data.inc_votes;
-  return connection("articles")
-    .where("article_id", "=", article_id)
-    .increment("votes", newVotes)
-    .returning("*")
-    .then(article => {
-      if (!article.length) {
-        return Promise.reject({
-          status: 404,
-          errMsg: `Error 404: Article_id ${article_id} Not Found`
-        });
-      }
-      return article[0];
-    });
-  // .catch(err => console.log(err));
+  if (!newVotes) {
+    return Promise.reject({ status: 400, errMsg: "Error 400: Malformed Body" });
+  } else {
+    return connection("articles")
+      .where("article_id", "=", article_id)
+      .increment("votes", newVotes)
+      .returning("*")
+      .then(article => {
+        if (!article.length) {
+          return Promise.reject({
+            status: 404,
+            errMsg: `Error 404: Article_id ${article_id} Not Found`
+          });
+        }
+        return article[0];
+      });
+    // .catch(err => console.log(err));
+  }
 };
