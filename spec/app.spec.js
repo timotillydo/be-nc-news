@@ -243,6 +243,40 @@ describe("/api", () => {
             });
           });
       });
+      it("returns status code: 200 and an array of article objects, default sorted/ordered, filtered by author if queried with a valid author", () => {
+        return request
+          .get("/api/articles?author=icellusedkars")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            articles.forEach(article => {
+              expect(article.author).to.equal("icellusedkars");
+            });
+            expect(articles).to.be.sortedBy("created_at", {
+              descending: true
+            });
+          });
+      });
+      it("returns status code: 200 and an array of article objects, default sorted/ordered, filtered by topic if queried with a valid topic", () => {
+        return request
+          .get("/api/articles?topic=mitch")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            articles.forEach(article => {
+              expect(article.topic).to.equal("mitch");
+            });
+            expect(articles).to.be.sortedBy("created_at", {
+              descending: true
+            });
+          });
+      });
+      it("returns a status code: 400 when sent a request with an invalid author query value", () => {
+        return request
+          .get("/api/articles?author=invalid_author")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
     });
   });
   describe("PATCH requests", () => {
@@ -394,13 +428,98 @@ describe("/api", () => {
   });
 });
 
-describe("error handling request to invalid/unbuilt endpoint", () => {
-  it("returns status code: 404 and error message: Route Not Found", () => {
-    return request
-      .get("/api/tooooopics")
-      .expect(404)
-      .then(({ body: { errMsg } }) => {
-        expect(errMsg).to.equal("Error 404: Route Not Found");
+describe("Other Errors", () => {
+  // beforeEach(() => connection.seed.run());
+  after(() => connection.destroy());
+
+  describe("Endpoint Not Valid", () => {
+    it("returns status code: 404 and error message: Route Not Found, when request sent to path that doesn't exist", () => {
+      return request
+        .get("/api/tooooopics")
+        .expect(404)
+        .then(({ body: { errMsg } }) => {
+          expect(errMsg).to.equal("Error 404: Route Not Found");
+        });
+    });
+  });
+  describe("Invalid Method on endpoints", () => {
+    describe("/api", () => {
+      it("returns status code: 405 and error message: Method Not Allowed", () => {
+        const invalidMethods = ["get", "post", "put", "delete", "patch"];
+        const methodPromises = invalidMethods.map(method => {
+          return request[method]("/api")
+            .expect(405)
+            .then(({ body: { errMsg } }) => {
+              expect(errMsg).to.equal("Error 405: Method Not Allowed");
+            });
+        });
+        return Promise.all(methodPromises);
       });
+      describe("/topics", () => {
+        it("returns status code: 405 and error message: Method Not Allowed", () => {
+          const invalidMethods = ["post", "put", "delete", "patch"];
+          const methodPromises = invalidMethods.map(method => {
+            return request[method]("/api/topics")
+              .expect(405)
+              .then(({ body: { errMsg } }) => {
+                expect(errMsg).to.equal("Error 405: Method Not Allowed");
+              });
+          });
+          return Promise.all(methodPromises);
+        });
+      });
+      describe("/articles", () => {
+        it("returns status code: 405 and error message: Method Not Allowed", () => {
+          const invalidMethods = ["post", "put", "delete", "patch"];
+          const methodPromises = invalidMethods.map(method => {
+            return request[method]("/api/articles")
+              .expect(405)
+              .then(({ body: { errMsg } }) => {
+                expect(errMsg).to.equal("Error 405: Method Not Allowed");
+              });
+          });
+          return Promise.all(methodPromises);
+        });
+        describe("/:article_id", () => {
+          it("returns status code: 405 and error message: Method Not Allowed", () => {
+            const invalidMethods = ["post", "put", "delete"];
+            const methodPromises = invalidMethods.map(method => {
+              return request[method]("/api/articles/:article_id")
+                .expect(405)
+                .then(({ body: { errMsg } }) => {
+                  expect(errMsg).to.equal("Error 405: Method Not Allowed");
+                });
+            });
+            return Promise.all(methodPromises);
+          });
+        });
+        describe("/:article_id/comments", () => {
+          it("returns status code: 405 and error message: Method Not Allowed", () => {
+            const invalidMethods = ["put", "delete", "patch"];
+            const methodPromises = invalidMethods.map(method => {
+              return request[method]("/api/articles/:article_id/comments")
+                .expect(405)
+                .then(({ body: { errMsg } }) => {
+                  expect(errMsg).to.equal("Error 405: Method Not Allowed");
+                });
+            });
+            return Promise.all(methodPromises);
+          });
+        });
+      });
+      describe("/users/:username", () => {
+        it("returns status code: 405 and error message: Method Not Allowed", () => {
+          const invalidMethods = ["post", "put", "delete", "patch"];
+          const methodPromises = invalidMethods.map(method => {
+            return request[method]("/api/users/:username")
+              .expect(405)
+              .then(({ body: { errMsg } }) => {
+                expect(errMsg).to.equal("Error 405: Method Not Allowed");
+              });
+          });
+          return Promise.all(methodPromises);
+        });
+      });
+    });
   });
 });

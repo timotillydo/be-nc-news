@@ -7,3 +7,7 @@ exports.customErrorHandler = (err, req, res, next) => {
     next(err);
   }
 };
+
+exports.invalidMethodHandler = (req, res, next) => {
+  res.status(405).send({ errMsg: "Error 405: Method Not Allowed" });
+};
