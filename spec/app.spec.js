@@ -222,6 +222,15 @@ describe("/api", () => {
             expect(errMsg).to.equal("Error 400: Bad Request");
           });
       });
+      it("returns a status code: 400 and an error message when a request is sent to a valid path where the body has an extra key", () => {
+        return request
+          .patch("/api/articles/1")
+          .send({ inc_votes: 20, extra_key: "hello" })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Malformed Body");
+          });
+      });
       it("returns a status code: 400 and an error message when a request is sent to a valid path but without a body", () => {
         return request
           .patch("/api/articles/1")

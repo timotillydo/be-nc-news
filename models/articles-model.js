@@ -20,7 +20,7 @@ exports.selectArticleById = article_id => {
 
 exports.updateArticleById = (article_id, data) => {
   const newVotes = data.inc_votes;
-  if (!newVotes) {
+  if (!newVotes || Object.keys(data).length > 1) {
     return Promise.reject({ status: 400, errMsg: "Error 400: Malformed Body" });
   } else {
     return connection("articles")
