@@ -44,12 +44,12 @@ describe("/api", () => {
       });
     });
     describe("/articles/:article_id", () => {
-      it("returns a status code: 200 and an array of article requested", () => {
+      it("returns a status code: 200 and an array of article objects requested", () => {
         return request
           .get("/api/articles/1")
           .expect(200)
-          .then(({ body: { article } }) => {
-            expect(article).to.have.keys(
+          .then(({ body: { articles } }) => {
+            expect(articles).to.have.keys(
               "author",
               "title",
               "article_id",
@@ -59,7 +59,7 @@ describe("/api", () => {
               "votes",
               "comment_count"
             );
-            expect(article.comment_count).to.equal("13");
+            expect(articles.comment_count).to.equal("13");
           });
       });
       it("returns a status code: 404 and error message when requesting a valid article_id that doesn't exist in the table", () => {
@@ -162,6 +162,27 @@ describe("/api", () => {
           .expect(400)
           .then(({ body: { errMsg } }) => {
             expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+    });
+    describe("/articles", () => {
+      it("returns a status code: 200 and an array of all articles with key comment_count included in each article object", () => {
+        return request
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            articles.forEach(article => {
+              expect(article).to.have.keys(
+                "author",
+                "title",
+                "article_id",
+                "topic",
+                "body",
+                "created_at",
+                "votes",
+                "comment_count"
+              );
+            });
           });
       });
     });

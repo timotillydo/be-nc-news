@@ -1,17 +1,19 @@
 const {
   selectArticleById,
-  updateArticleById
+  updateArticleById,
+  selectArticles
 } = require("../models/articles-model");
 const {
   insertComment,
   selectAllCommentsByArticleId
 } = require("../models/comments-model");
 
-exports.getArticleById = (req, res, next) => {
+//Reusing controller and model if no id passed then just get all articles
+exports.getArticles = (req, res, next) => {
   const { article_id } = req.params;
-  selectArticleById(article_id)
-    .then(article => {
-      res.status(200).send({ article });
+  selectArticles(article_id)
+    .then(articles => {
+      res.status(200).send({ articles });
     })
     .catch(next);
 };
