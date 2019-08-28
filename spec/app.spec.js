@@ -124,12 +124,12 @@ describe("/api", () => {
             });
           });
       });
-      it("returns a status code: 404 and error message when request sent for all comments belonging to an article_id that doesn't exist", () => {
+      it("returns a status code: 422 and error message when request sent for all comments belonging to an article_id that doesn't exist", () => {
         return request
           .get("/api/articles/8888888/comments")
-          .expect(404)
+          .expect(422)
           .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 404: Resource Not Found");
+            expect(errMsg).to.equal("Error 422: Unprocessable Entity");
           });
       });
       it("returns a status code: 400 and an error message when request sent for all comments with an invalid datatype as the article_id", () => {
@@ -142,7 +142,7 @@ describe("/api", () => {
       });
       it("returns a status code: 400 when sent a request with an invalid sort_by query value", () => {
         return request
-          .get("/api/articles/comments?sort_by=invalid_value")
+          .get("/api/articles/1/comments?sort_by=invalid_value")
           .expect(400)
           .then(({ body: { errMsg } }) => {
             expect(errMsg).to.equal("Error 400: Bad Request");
@@ -150,25 +150,83 @@ describe("/api", () => {
       });
       it("returns a status code: 400 when sent a request with an invalid order query value", () => {
         return request
-          .get("/api/articles/comments?order=invalid_order")
+          .get("/api/articles/1/comments?order=invalid_order")
           .expect(400)
           .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Bad Request");
+            expect(errMsg).to.equal("Error 400: Bad Request - Invalid Query");
           });
       });
-      it("returns a status code: 400 when sent a request with an invalid query key", () => {
+      it("returns a status code: 200 when sent a request with an invalid query key", () => {
         return request
-          .get("/api/articles/comments?invalid_query=hello")
-          .expect(400)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Bad Request");
-          });
+          .get("/api/articles/1/comments?invalid_query=hello")
+          .expect(200);
       });
     });
     describe("/articles", () => {
       it("returns a status code: 200 and an array of all articles with key comment_count included in each article object", () => {
         return request
           .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            articles.forEach(article => {
+              expect(article).to.have.keys(
+                "author",
+                "title",
+                "article_id",
+                "topic",
+                "body",
+                "created_at",
+                "votes",
+                "comment_count"
+              );
+            });
+          });
+      });
+      it("returns a status code: 200 and an array of articles default sorted by created_at when not passed a sort_by query value, also default sorted in descending order", () => {
+        return request
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy("created_at", { descending: true });
+          });
+      });
+      it("returns a status code: 200 and an array of articles sorted by any valid sort_by value passed with query default sorted in descending order", () => {
+        return request
+          .get("/api/articles?sort_by=votes")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy("votes", { descending: true });
+          });
+      });
+      it("returns a status code: 200 and an array of articles default sorted by created_at key and ascending in order when queried with order=asc", () => {
+        return request
+          .get("/api/articles?order=asc")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy("created_at", {
+              descending: false
+            });
+          });
+      });
+      it("returns a status code: 400 when sent a request with an invalid sort_by query value", () => {
+        return request
+          .get("/api/articles?sort_by=invalid_value")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 when sent a request with an invalid order query value", () => {
+        return request
+          .get("/api/articles?order=invalid_order")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request - Invalid Query");
+          });
+      });
+      it("returns a status code: 200 when sent a request with an invalid query key", () => {
+        return request
+          .get("/api/articles?invalid_query=hello")
           .expect(200)
           .then(({ body: { articles } }) => {
             articles.forEach(article => {

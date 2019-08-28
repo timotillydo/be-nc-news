@@ -15,22 +15,26 @@ exports.insertComment = (article_id, newComment) => {
 };
 
 exports.selectAllCommentsByArticleId = (article_id, sort_by, order) => {
-  return connection("comments")
-    .select("*")
-    .where("article_id", article_id)
-    .modify(query => {
-      if (sort_by) query.orderBy(sort_by, "desc");
-      if (order) query.orderBy(sort_by || "created_at", order);
-    })
-    .then(comments => {
-      if (!comments.length) {
-        return Promise.reject({
-          status: 404,
-          errMsg: "Error 404: Resource Not Found"
-        });
-      } else {
-        // console.log(comments);
-        return comments;
-      }
+  if (order === undefined || order === "asc" || order === "desc") {
+    return connection("comments")
+      .select("*")
+      .where("article_id", article_id)
+      .orderBy(sort_by || "created_at", order || "desc")
+      .then(comments => {
+        if (!comments.length) {
+          return Promise.reject({
+            status: 422,
+            errMsg: "Error 422: Unprocessable Entity"
+          });
+        } else {
+          return comments;
+        }
+      });
+    // .catch(err => console.log(err));
+  } else {
+    return Promise.reject({
+      status: 400,
+      errMsg: "Error 400: Bad Request - Invalid Query"
     });
+  }
 };

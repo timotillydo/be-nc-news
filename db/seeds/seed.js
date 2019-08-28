@@ -8,7 +8,7 @@ const {
 const { formatDates, formatComments, makeRefObj } = require("../utils/utils");
 
 exports.seed = function(knex) {
-  console.log("runnning seed file");
+  console.log("Runnning seed file...");
   const topicsInsertions = knex("topics").insert(topicData);
   const usersInsertions = knex("users").insert(userData);
 

@@ -1,5 +1,5 @@
 exports.psqlErrorHandler = (err, req, res, next) => {
-  const badReqCodes = ["22P02", "23502"];
+  const badReqCodes = ["22P02", "23502", "42703"];
   const unproccessableCodes = ["23503"];
   // console.log(err);
   if (badReqCodes.includes(err.code)) {
