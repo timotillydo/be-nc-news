@@ -4,6 +4,7 @@ const app = require("../app");
 const request = require("supertest")(app);
 const chai = require("chai");
 const { expect } = chai;
+chai.use(require("chai-sorted"));
 const connection = require("../db/connection");
 
 describe("/api", () => {
@@ -95,6 +96,72 @@ describe("/api", () => {
                 "article_id"
               );
             });
+          });
+      });
+      it("returns a status code: 200 and an array of comments default sorted by created_at key in descending order when requested without a sort_by query", () => {
+        return request
+          .get("/api/articles/1/comments")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.be.sortedBy("created_at", { descending: true });
+          });
+      });
+      it("returns a status code: 200 and an array of comments sorted by sort_by value passed with query default sorted in descending order", () => {
+        return request
+          .get("/api/articles/1/comments?sort_by=votes")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.be.sortedBy("votes", { descending: true });
+          });
+      });
+      it("returns a status code: 200 and an array of comments default sorted by created_at key and ascending in order when queried with order=asc", () => {
+        return request
+          .get("/api/articles/1/comments?order=asc")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.be.sortedBy("created_at", {
+              descending: false
+            });
+          });
+      });
+      it("returns a status code: 404 and error message when request sent for all comments belonging to an article_id that doesn't exist", () => {
+        return request
+          .get("/api/articles/8888888/comments")
+          .expect(404)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
+          });
+      });
+      it("returns a status code: 400 and an error message when request sent for all comments with an invalid datatype as the article_id", () => {
+        return request
+          .get("/api/articles/invalidId/comments")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 when sent a request with an invalid sort_by query value", () => {
+        return request
+          .get("/api/articles/comments?sort_by=invalid_value")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 when sent a request with an invalid order query value", () => {
+        return request
+          .get("/api/articles/comments?order=invalid_order")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 when sent a request with an invalid query key", () => {
+        return request
+          .get("/api/articles/comments?invalid_query=hello")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
           });
       });
     });
@@ -189,9 +256,9 @@ describe("/api", () => {
         return request
           .post("/api/articles/12345/comments")
           .send({ username: "lurker", body: "that article was great!" })
-          .expect(404)
+          .expect(422)
           .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 404: Resource Not Found");
+            expect(errMsg).to.equal("Error 422: Unprocessable Entity");
           });
       });
       it("returns a status code: 400 and error message when request sent for an invalid article_id datatype", () => {

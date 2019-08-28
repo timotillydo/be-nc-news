@@ -38,7 +38,9 @@ exports.postCommentByArticleId = (req, res, next) => {
 
 exports.getAllCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
-  selectAllCommentsByArticleId(article_id)
+  const { sort_by, order } = req.query;
+  // console.log(sort_by, order);
+  selectAllCommentsByArticleId(article_id, sort_by, order)
     .then(comments => {
       res.status(200).send({ comments });
     })
