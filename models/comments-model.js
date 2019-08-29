@@ -11,7 +11,6 @@ exports.insertComment = (article_id, newComment) => {
     .then(newComment => {
       return newComment[0];
     });
-  // .catch(err => console.log(err));
 };
 
 exports.selectAllCommentsByArticleId = (article_id, sort_by, order) => {
@@ -30,7 +29,6 @@ exports.selectAllCommentsByArticleId = (article_id, sort_by, order) => {
           return comments;
         }
       });
-    // .catch(err => console.log(err));
   } else {
     return Promise.reject({
       status: 400,

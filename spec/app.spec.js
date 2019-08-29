@@ -278,11 +278,6 @@ describe("/api", () => {
           });
       });
     });
-    // describe('/',()=>{
-    //   it('returns', () => {
-
-    //   });
-    // })
   });
   describe("PATCH requests", () => {
     describe("/articles/:article_id", () => {

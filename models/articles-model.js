@@ -66,6 +66,5 @@ exports.updateVotes = (article_id, comment_id, data) => {
         }
         return response[0];
       });
-    // .catch(err => console.log(err));
   }
 };
