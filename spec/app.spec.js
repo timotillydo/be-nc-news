@@ -278,6 +278,11 @@ describe("/api", () => {
           });
       });
     });
+    // describe('/',()=>{
+    //   it('returns', () => {
+
+    //   });
+    // })
   });
   describe("PATCH requests", () => {
     describe("/articles/:article_id", () => {
@@ -498,6 +503,33 @@ describe("/api", () => {
       });
     });
   });
+  describe("DELETE requests", () => {
+    describe("/comments/:comment_id", () => {
+      it("returns status code: 204 and can delete houses referenced by other tables", () => {
+        const comment_ids = [1, 2, 3, 4, 5, 6, 7, 8];
+        const promises = comment_ids.map(comment_id => {
+          request.delete(`/api/comments/${comment_id}`).expect(204);
+        });
+        return Promise.all(promises);
+      });
+      it("returns a status code: 404 and error message when request sent for a deletion of comment where the comment_id doesn't exist", () => {
+        return request
+          .delete("/api/comments/99999")
+          .expect(404)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent for a deletion of comment where the comment_id doesn't exist", () => {
+        return request
+          .delete("/api/comments/qwwbdcflbqrlfbjh")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+    });
+  });
 
   describe("Misc Error Handling", () => {
     describe("Endpoint Not Valid", () => {
@@ -588,9 +620,9 @@ describe("/api", () => {
             return Promise.all(methodPromises);
           });
         });
-        describe.only("/comments/:comment_id", () => {
+        describe("/comments/:comment_id", () => {
           it("returns status code: 405 and error message: Method Not Allowed", () => {
-            const invalidMethods = ["get", "post", "put", "delete"];
+            const invalidMethods = ["get", "post", "put"];
             const methodPromises = invalidMethods.map(method => {
               return request[method]("/api/comments/:comment_id")
                 .expect(405)

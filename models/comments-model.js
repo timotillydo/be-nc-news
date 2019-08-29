@@ -38,3 +38,17 @@ exports.selectAllCommentsByArticleId = (article_id, sort_by, order) => {
     });
   }
 };
+
+exports.removeCommentById = comment_id => {
+  return connection("comments")
+    .where("comment_id", comment_id)
+    .del()
+    .then(deleteCount => {
+      if (deleteCount < 1)
+        return Promise.reject({
+          status: 404,
+          errMsg: "Error 404: Resource Not Found"
+        });
+      else return deleteCount;
+    });
+};
