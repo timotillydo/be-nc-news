@@ -1,5 +1,4 @@
 exports.up = function(knex) {
-  console.log("Creating comments table...");
   return knex.schema.createTable("comments", commentsTable => {
     commentsTable
       .increments("comment_id")
@@ -23,13 +22,5 @@ exports.up = function(knex) {
 };
 
 exports.down = function(knex) {
-  console.log("Dropping comments table...");
   return knex.schema.dropTable("comments");
 };
-
-// - `comment_id` which is the primary key
-// - `author` field that references a user's primary key (username)
-// - `article_id` field that references an article's primary key
-// - `votes` defaults to 0
-// - `created_at` defaults to the current timestamp
-// - `body`
