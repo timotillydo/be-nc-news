@@ -1,4 +1,6 @@
 const connection = require("../db/connection");
+const { selectTopics } = require("../models/topics-model");
+const { selectUserByUsername } = require("../models/users-model");
 
 exports.selectArticles = (article_id, sort_by, order, author, topic) => {
   if (order != undefined && order != "asc" && order != "desc") {
@@ -21,25 +23,40 @@ exports.selectArticles = (article_id, sort_by, order, author, topic) => {
         query.where("articles.topic", "=", topic);
       }
     })
-    .groupBy("articles.article_id") // condensing all the multiple entries from comments with the same article id into the comment_count
+    .groupBy("articles.article_id")
     .then(articles => {
-      if (!articles.length && article_id) {
+      return Promise.all([articles, selectTopics()]);
+    })
+    .then(([articles, topics]) => {
+      if (articles.length === 1) return articles[0];
+      if (articles.length) return articles;
+      if (topics[topic]) return articles;
+      else
         return Promise.reject({
           status: 404,
-          errMsg: `Error 404: Article_id ${article_id} Not Found`
+          errMsg: `Error 404: Resource Not Found`
         });
-      } else if (!articles.length) {
-        return Promise.reject({
-          status: 400,
-          errMsg: `Error 400: Bad Request`
-        });
-      } else if (articles.length > 1) {
-        return articles;
-      } else {
-        return articles[0];
-      }
     });
+  // .catch(err => console.log(err));
 };
+
+//       if (!articles.length && article_id) {
+//         return Promise.reject({
+//           status: 404,
+//           errMsg: `Error 404: Article_id ${article_id} Not Found`
+//         });
+//       } else if (!articles.length) {
+//         return Promise.reject({
+//           status: 400,
+//           errMsg: `Error 400: Bad Request`
+//         });
+//       } else if (articles.length > 1) {
+//         return articles;
+//       } else {
+//         return articles[0];
+//       }
+//     });
+// };
 
 exports.updateVotes = (article_id, comment_id, data) => {
   const newVotes = data.inc_votes;

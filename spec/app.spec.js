@@ -44,12 +44,12 @@ describe("/api", () => {
       });
     });
     describe("/articles/:article_id", () => {
-      it("returns a status code: 200 and an array of article objects requested", () => {
+      it("returns a status code: 200 and an article object requested", () => {
         return request
           .get("/api/articles/1")
           .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles).to.have.keys(
+          .then(({ body: { article } }) => {
+            expect(article).to.have.keys(
               "author",
               "title",
               "article_id",
@@ -59,7 +59,7 @@ describe("/api", () => {
               "votes",
               "comment_count"
             );
-            expect(articles.comment_count).to.equal("13");
+            expect(article.comment_count).to.equal("13");
           });
       });
       it("returns a status code: 404 and error message when requesting a valid article_id that doesn't exist in the table", () => {
@@ -67,7 +67,7 @@ describe("/api", () => {
           .get("/api/articles/888888")
           .expect(404)
           .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 404: Article_id 888888 Not Found");
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
           });
       });
       it("returns a status code: 400 and error message when requesting an invalid article_id", () => {
@@ -269,12 +269,20 @@ describe("/api", () => {
             });
           });
       });
+      it("returns status code: 404 and an error message when queried with a valid topic but it doesn't exist", () => {
+        return request
+          .get("/api/articles?topic=not-a-topic")
+          .expect(404)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
+          });
+      });
       it("returns a status code: 400 when sent a request with an invalid author query value", () => {
         return request
-          .get("/api/articles?author=invalid_author")
-          .expect(400)
+          .get("/api/articles?author=no-an-author")
+          .expect(404)
           .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Bad Request");
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
           });
       });
     });

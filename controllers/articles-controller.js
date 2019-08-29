@@ -9,7 +9,8 @@ exports.getArticles = (req, res, next) => {
   const { sort_by, order, author, topic } = req.query;
   selectArticles(article_id, sort_by, order, author, topic)
     .then(articles => {
-      res.status(200).send({ articles });
+      if (Array.isArray(articles)) res.status(200).send({ articles });
+      else res.status(200).send({ article: articles });
     })
     .catch(next);
 };
