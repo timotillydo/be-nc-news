@@ -1,6 +1,5 @@
 const connection = require("../db/connection");
 
-//reusing model for all articles or just one by article_id if id is passed
 exports.selectArticles = (article_id, sort_by, order, author, topic) => {
   if (order != undefined && order != "asc" && order != "desc") {
     return Promise.reject({
@@ -36,27 +35,36 @@ exports.selectArticles = (article_id, sort_by, order, author, topic) => {
         });
       } else if (articles.length > 1) {
         return articles;
-      } else return articles[0];
+      } else {
+        return articles[0];
+      }
     });
 };
 
-exports.updateArticleById = (article_id, data) => {
+exports.updateVotes = (article_id, comment_id, data) => {
   const newVotes = data.inc_votes;
   if (!newVotes || Object.keys(data).length > 1) {
     return Promise.reject({ status: 400, errMsg: "Error 400: Malformed Body" });
   } else {
-    return connection("articles")
-      .where("article_id", "=", article_id)
+    return connection
+      .select("*")
+      .modify(query => {
+        if (!article_id) {
+          query.from("comments").where("comments.comment_id", "=", comment_id);
+        } else {
+          query.from("articles").where("articles.article_id", "=", article_id);
+        }
+      })
       .increment("votes", newVotes)
       .returning("*")
-      .then(article => {
-        if (!article.length) {
+      .then(response => {
+        if (!response.length) {
           return Promise.reject({
             status: 404,
-            errMsg: `Error 404: Article_id ${article_id} Not Found`
+            errMsg: `Error 404: Resource Not Found`
           });
         }
-        return article[0];
+        return response[0];
       });
     // .catch(err => console.log(err));
   }

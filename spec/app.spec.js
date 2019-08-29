@@ -299,13 +299,13 @@ describe("/api", () => {
             expect(updatedArticle.votes).to.equal(122);
           });
       });
-      it("returns a status code: 404 and error message when patching a valid article_id that doesn't exist in the table", () => {
+      it("returns a status code: 404 and error message when patching a valid article_id but doesn't exist in the table", () => {
         return request
           .patch("/api/articles/888888")
           .send({ inc_votes: 13 })
           .expect(404)
           .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 404: Article_id 888888 Not Found");
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
           });
       });
       it("returns a status code: 400 and error message when request sent for an invalid article_id", () => {
@@ -326,7 +326,7 @@ describe("/api", () => {
             expect(errMsg).to.equal("Error 400: Malformed Body");
           });
       });
-      it("returns a status code: 400 and an error message when a request is sent  to a valid path where the body has a correct column header key but invalid data", () => {
+      it("returns a status code: 400 and an error message when a request is sent to a valid path where the body has a correct column header key but invalid data", () => {
         return request
           .patch("/api/articles/1")
           .send({ inc_votes: "hello this is invalid data" })
@@ -347,6 +347,78 @@ describe("/api", () => {
       it("returns a status code: 400 and an error message when a request is sent to a valid path but without a body", () => {
         return request
           .patch("/api/articles/1")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Malformed Body");
+          });
+      });
+    });
+    describe("/comments/:comment_id", () => {
+      it("returns a status code: 200 and a copy of the the updated comment when requested with a valid body", () => {
+        return request
+          .patch("/api/comments/1")
+          .send({ inc_votes: 33 })
+          .expect(200)
+          .then(({ body: { updatedComment } }) => {
+            expect(updatedComment).to.have.keys(
+              "comment_id",
+              "author",
+              "article_id",
+              "votes",
+              "created_at",
+              "body"
+            );
+            expect(updatedComment.votes).to.equal(49);
+          });
+      });
+      it("returns a status code: 404 and error message when patching a valid comment_id but doesn't exist in the table", () => {
+        return request
+          .patch("/api/comments/77777")
+          .send({ inc_votes: 777 })
+          .expect(404)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent with an invalid comment_id", () => {
+        return request
+          .patch("/api/comments/invalidId")
+          .send({ inc_votes: 777 })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns status code: 400 and error message when a request is sent to a valid path with a body with a column that doesn't exist", () => {
+        return request
+          .patch("/api/comments/1")
+          .send({ invalid_column: "hello" })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Malformed Body");
+          });
+      });
+      it("returns a status code: 400 and an error message when a request is sent to a valid path where the body has a correct column header key but invalid data", () => {
+        return request
+          .patch("/api/comments/1")
+          .send({ inc_votes: "invalid data" })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 and an error message when a request is sent to a valid path where the body has an extra key", () => {
+        return request
+          .patch("/api/comments/1")
+          .send({ inc_votes: 20, extra_key: "hello" })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Malformed Body");
+          });
+      });
+      it("returns a status code: 400 and an error message when a request is sent to a valid path but without a body", () => {
+        return request
+          .patch("/api/comments/1")
           .expect(400)
           .then(({ body: { errMsg } }) => {
             expect(errMsg).to.equal("Error 400: Malformed Body");
@@ -426,40 +498,24 @@ describe("/api", () => {
       });
     });
   });
-});
 
-describe("Other Errors", () => {
-  // beforeEach(() => connection.seed.run());
-  after(() => connection.destroy());
-
-  describe("Endpoint Not Valid", () => {
-    it("returns status code: 404 and error message: Route Not Found, when request sent to path that doesn't exist", () => {
-      return request
-        .get("/api/tooooopics")
-        .expect(404)
-        .then(({ body: { errMsg } }) => {
-          expect(errMsg).to.equal("Error 404: Route Not Found");
-        });
+  describe("Misc Error Handling", () => {
+    describe("Endpoint Not Valid", () => {
+      it("returns status code: 404 and error message: Route Not Found, when request sent to path that doesn't exist", () => {
+        return request
+          .get("/api/tooooopics")
+          .expect(404)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 404: Route Not Found");
+          });
+      });
     });
-  });
-  describe("Invalid Method on endpoints", () => {
-    describe("/api", () => {
-      it("returns status code: 405 and error message: Method Not Allowed", () => {
-        const invalidMethods = ["get", "post", "put", "delete", "patch"];
-        const methodPromises = invalidMethods.map(method => {
-          return request[method]("/api")
-            .expect(405)
-            .then(({ body: { errMsg } }) => {
-              expect(errMsg).to.equal("Error 405: Method Not Allowed");
-            });
-        });
-        return Promise.all(methodPromises);
-      });
-      describe("/topics", () => {
+    describe("Invalid Method On Endpoint", () => {
+      describe("/api", () => {
         it("returns status code: 405 and error message: Method Not Allowed", () => {
-          const invalidMethods = ["post", "put", "delete", "patch"];
+          const invalidMethods = ["get", "post", "put", "delete", "patch"];
           const methodPromises = invalidMethods.map(method => {
-            return request[method]("/api/topics")
+            return request[method]("/api")
               .expect(405)
               .then(({ body: { errMsg } }) => {
                 expect(errMsg).to.equal("Error 405: Method Not Allowed");
@@ -467,24 +523,11 @@ describe("Other Errors", () => {
           });
           return Promise.all(methodPromises);
         });
-      });
-      describe("/articles", () => {
-        it("returns status code: 405 and error message: Method Not Allowed", () => {
-          const invalidMethods = ["post", "put", "delete", "patch"];
-          const methodPromises = invalidMethods.map(method => {
-            return request[method]("/api/articles")
-              .expect(405)
-              .then(({ body: { errMsg } }) => {
-                expect(errMsg).to.equal("Error 405: Method Not Allowed");
-              });
-          });
-          return Promise.all(methodPromises);
-        });
-        describe("/:article_id", () => {
+        describe("/topics", () => {
           it("returns status code: 405 and error message: Method Not Allowed", () => {
-            const invalidMethods = ["post", "put", "delete"];
+            const invalidMethods = ["post", "put", "delete", "patch"];
             const methodPromises = invalidMethods.map(method => {
-              return request[method]("/api/articles/:article_id")
+              return request[method]("/api/topics")
                 .expect(405)
                 .then(({ body: { errMsg } }) => {
                   expect(errMsg).to.equal("Error 405: Method Not Allowed");
@@ -493,11 +536,50 @@ describe("Other Errors", () => {
             return Promise.all(methodPromises);
           });
         });
-        describe("/:article_id/comments", () => {
+        describe("/articles", () => {
           it("returns status code: 405 and error message: Method Not Allowed", () => {
-            const invalidMethods = ["put", "delete", "patch"];
+            const invalidMethods = ["post", "put", "delete", "patch"];
             const methodPromises = invalidMethods.map(method => {
-              return request[method]("/api/articles/:article_id/comments")
+              return request[method]("/api/articles")
+                .expect(405)
+                .then(({ body: { errMsg } }) => {
+                  expect(errMsg).to.equal("Error 405: Method Not Allowed");
+                });
+            });
+            return Promise.all(methodPromises);
+          });
+          describe("/:article_id", () => {
+            it("returns status code: 405 and error message: Method Not Allowed", () => {
+              const invalidMethods = ["post", "put", "delete"];
+              const methodPromises = invalidMethods.map(method => {
+                return request[method]("/api/articles/:article_id")
+                  .expect(405)
+                  .then(({ body: { errMsg } }) => {
+                    expect(errMsg).to.equal("Error 405: Method Not Allowed");
+                  });
+              });
+              return Promise.all(methodPromises);
+            });
+          });
+          describe("/:article_id/comments", () => {
+            it("returns status code: 405 and error message: Method Not Allowed", () => {
+              const invalidMethods = ["put", "delete", "patch"];
+              const methodPromises = invalidMethods.map(method => {
+                return request[method]("/api/articles/:article_id/comments")
+                  .expect(405)
+                  .then(({ body: { errMsg } }) => {
+                    expect(errMsg).to.equal("Error 405: Method Not Allowed");
+                  });
+              });
+              return Promise.all(methodPromises);
+            });
+          });
+        });
+        describe("/users/:username", () => {
+          it("returns status code: 405 and error message: Method Not Allowed", () => {
+            const invalidMethods = ["post", "put", "delete", "patch"];
+            const methodPromises = invalidMethods.map(method => {
+              return request[method]("/api/users/:username")
                 .expect(405)
                 .then(({ body: { errMsg } }) => {
                   expect(errMsg).to.equal("Error 405: Method Not Allowed");
@@ -506,18 +588,18 @@ describe("Other Errors", () => {
             return Promise.all(methodPromises);
           });
         });
-      });
-      describe("/users/:username", () => {
-        it("returns status code: 405 and error message: Method Not Allowed", () => {
-          const invalidMethods = ["post", "put", "delete", "patch"];
-          const methodPromises = invalidMethods.map(method => {
-            return request[method]("/api/users/:username")
-              .expect(405)
-              .then(({ body: { errMsg } }) => {
-                expect(errMsg).to.equal("Error 405: Method Not Allowed");
-              });
+        describe.only("/comments/:comment_id", () => {
+          it("returns status code: 405 and error message: Method Not Allowed", () => {
+            const invalidMethods = ["get", "post", "put", "delete"];
+            const methodPromises = invalidMethods.map(method => {
+              return request[method]("/api/comments/:comment_id")
+                .expect(405)
+                .then(({ body: { errMsg } }) => {
+                  expect(errMsg).to.equal("Error 405: Method Not Allowed");
+                });
+            });
+            return Promise.all(methodPromises);
           });
-          return Promise.all(methodPromises);
         });
       });
     });
