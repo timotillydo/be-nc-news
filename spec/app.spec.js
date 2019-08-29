@@ -98,6 +98,15 @@ describe("/api", () => {
             });
           });
       });
+      it("returns a status code: 200 and an empty array for a valid article_id without any comments", () => {
+        return request
+          .get("/api/articles/2/comments")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.eql([]);
+          });
+      });
+
       it("returns a status code: 200 and an array of comments default sorted by created_at key in descending order when requested without a sort_by query", () => {
         return request
           .get("/api/articles/1/comments")
@@ -124,12 +133,12 @@ describe("/api", () => {
             });
           });
       });
-      it("returns a status code: 422 and error message when request sent for all comments belonging to an article_id that doesn't exist", () => {
+      it("returns a status code: 404 and error message when request sent for all comments belonging to an article_id that doesn't exist", () => {
         return request
           .get("/api/articles/8888888/comments")
-          .expect(422)
+          .expect(404)
           .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 422: Unprocessable Entity");
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
           });
       });
       it("returns a status code: 400 and an error message when request sent for all comments with an invalid datatype as the article_id", () => {
@@ -294,8 +303,8 @@ describe("/api", () => {
           .patch("/api/articles/1")
           .send({ inc_votes: 22 })
           .expect(200)
-          .then(({ body: { updatedArticle } }) => {
-            expect(updatedArticle).to.have.keys(
+          .then(({ body: { article } }) => {
+            expect(article).to.have.keys(
               "article_id",
               "title",
               "body",
@@ -304,7 +313,7 @@ describe("/api", () => {
               "author",
               "created_at"
             );
-            expect(updatedArticle.votes).to.equal(122);
+            expect(article.votes).to.equal(122);
           });
       });
       it("returns a status code: 404 and error message when patching a valid article_id but doesn't exist in the table", () => {
@@ -325,15 +334,6 @@ describe("/api", () => {
             expect(errMsg).to.equal("Error 400: Bad Request");
           });
       });
-      it("returns status code: 400 and error message when a request is sent to a valid path with a body with a column that doesn't exist", () => {
-        return request
-          .patch("/api/articles/1")
-          .send({ invalid_column: "hello this is data" })
-          .expect(400)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Malformed Body");
-          });
-      });
       it("returns a status code: 400 and an error message when a request is sent to a valid path where the body has a correct column header key but invalid data", () => {
         return request
           .patch("/api/articles/1")
@@ -343,21 +343,21 @@ describe("/api", () => {
             expect(errMsg).to.equal("Error 400: Bad Request");
           });
       });
-      it("returns a status code: 400 and an error message when a request is sent to a valid path where the body has an extra key", () => {
+      it("returns a status code: 200 and an unchanged article when a request is sent to a valid path but without a body", () => {
         return request
           .patch("/api/articles/1")
-          .send({ inc_votes: 20, extra_key: "hello" })
-          .expect(400)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Malformed Body");
-          });
-      });
-      it("returns a status code: 400 and an error message when a request is sent to a valid path but without a body", () => {
-        return request
-          .patch("/api/articles/1")
-          .expect(400)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Malformed Body");
+          .expect(200)
+          .then(({ body: { article } }) => {
+            expect(article).to.have.keys(
+              "article_id",
+              "title",
+              "topic",
+              "author",
+              "body",
+              "created_at",
+              "votes"
+            );
+            expect(article.votes).to.equal(100);
           });
       });
     });
@@ -367,8 +367,8 @@ describe("/api", () => {
           .patch("/api/comments/1")
           .send({ inc_votes: 33 })
           .expect(200)
-          .then(({ body: { updatedComment } }) => {
-            expect(updatedComment).to.have.keys(
+          .then(({ body: { comment } }) => {
+            expect(comment).to.have.keys(
               "comment_id",
               "author",
               "article_id",
@@ -376,7 +376,7 @@ describe("/api", () => {
               "created_at",
               "body"
             );
-            expect(updatedComment.votes).to.equal(49);
+            expect(comment.votes).to.equal(49);
           });
       });
       it("returns a status code: 404 and error message when patching a valid comment_id but doesn't exist in the table", () => {
@@ -397,15 +397,6 @@ describe("/api", () => {
             expect(errMsg).to.equal("Error 400: Bad Request");
           });
       });
-      it("returns status code: 400 and error message when a request is sent to a valid path with a body with a column that doesn't exist", () => {
-        return request
-          .patch("/api/comments/1")
-          .send({ invalid_column: "hello" })
-          .expect(400)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Malformed Body");
-          });
-      });
       it("returns a status code: 400 and an error message when a request is sent to a valid path where the body has a correct column header key but invalid data", () => {
         return request
           .patch("/api/comments/1")
@@ -415,21 +406,20 @@ describe("/api", () => {
             expect(errMsg).to.equal("Error 400: Bad Request");
           });
       });
-      it("returns a status code: 400 and an error message when a request is sent to a valid path where the body has an extra key", () => {
+      it("returns a status code: 200 and an unchanged comment when a request is sent to a valid path but without a body", () => {
         return request
           .patch("/api/comments/1")
-          .send({ inc_votes: 20, extra_key: "hello" })
-          .expect(400)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Malformed Body");
-          });
-      });
-      it("returns a status code: 400 and an error message when a request is sent to a valid path but without a body", () => {
-        return request
-          .patch("/api/comments/1")
-          .expect(400)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Malformed Body");
+          .expect(200)
+          .then(({ body: { comment } }) => {
+            expect(comment).to.have.keys(
+              "comment_id",
+              "article_id",
+              "author",
+              "body",
+              "created_at",
+              "votes"
+            );
+            expect(comment.votes).to.equal(16);
           });
       });
     });
@@ -454,7 +444,7 @@ describe("/api", () => {
             expect(comment.body).to.equal("that article was great!");
           });
       });
-      it("returns a status code: 404 and error message when request sent for a valid id but the article_id doesn't exist", () => {
+      it("returns a status code: 422 and error message when request sent for a valid id datatype but the article_id doesn't exist", () => {
         return request
           .post("/api/articles/12345/comments")
           .send({ username: "lurker", body: "that article was great!" })
@@ -639,4 +629,4 @@ describe("/api", () => {
       });
     });
   });
-});
+}).timeout(5000);

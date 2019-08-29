@@ -8,16 +8,12 @@ const {
 const { formatDates, formatComments, makeRefObj } = require("../utils/utils");
 
 exports.seed = function(knex) {
-  console.log("       Runnning seed file...");
   const topicsInsertions = knex("topics").insert(topicData);
   const usersInsertions = knex("users").insert(userData);
 
   return knex.migrate
     .rollback()
     .then(() => knex.migrate.latest())
-    .then(() => {
-      console.log("       Migrate-rollback/latest Complete");
-    })
     .then(() => Promise.all([topicsInsertions, usersInsertions]))
     .then(() => {
       return knex("articles")

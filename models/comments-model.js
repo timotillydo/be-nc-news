@@ -1,4 +1,5 @@
 const connection = require("../db/connection");
+const { selectArticles } = require("../models/articles-model");
 
 exports.insertComment = (article_id, newComment) => {
   return connection("comments")
@@ -14,27 +15,27 @@ exports.insertComment = (article_id, newComment) => {
 };
 
 exports.selectAllCommentsByArticleId = (article_id, sort_by, order) => {
-  if (order === undefined || order === "asc" || order === "desc") {
-    return connection("comments")
-      .select("*")
-      .where("article_id", article_id)
-      .orderBy(sort_by || "created_at", order || "desc")
-      .then(comments => {
-        if (!comments.length) {
-          return Promise.reject({
-            status: 422,
-            errMsg: "Error 422: Unprocessable Entity"
-          });
-        } else {
-          return comments;
-        }
-      });
-  } else {
+  if (order != undefined && order != "asc" && order != "desc") {
     return Promise.reject({
       status: 400,
-      errMsg: "Error 400: Bad Request - Invalid Query"
+      errMsg: `Error 400: Bad Request - Invalid Query`
     });
   }
+  return connection("comments")
+    .select("*")
+    .where("article_id", article_id)
+    .orderBy(sort_by || "created_at", order || "desc")
+    .then(comments => {
+      return Promise.all([comments, selectArticles(article_id)]);
+    })
+    .then(([comments, article]) => {
+      if (article) return comments;
+      else
+        return Promise.reject({
+          status: 404,
+          errMsg: "Error 404: Resource Not Found"
+        });
+    });
 };
 
 exports.removeCommentById = comment_id => {

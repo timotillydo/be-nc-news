@@ -17,10 +17,10 @@ exports.getArticles = (req, res, next) => {
 
 exports.patchArticleById = (req, res, next) => {
   const { article_id, comment_id } = req.params;
-  const data = req.body;
-  updateVotes(article_id, comment_id, data)
-    .then(updatedArticle => {
-      res.status(200).send({ updatedArticle });
+  const { inc_votes } = req.body;
+  updateVotes(article_id, comment_id, inc_votes)
+    .then(([article]) => {
+      res.status(200).send({ article });
     })
     .catch(next);
 };
