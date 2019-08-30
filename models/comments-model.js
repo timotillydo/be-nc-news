@@ -14,7 +14,13 @@ exports.insertComment = (article_id, newComment) => {
     });
 };
 
-exports.selectAllCommentsByArticleId = (article_id, sort_by, order) => {
+exports.selectAllCommentsByArticleId = (
+  article_id,
+  sort_by,
+  order,
+  limit,
+  p
+) => {
   if (order != undefined && order != "asc" && order != "desc") {
     return Promise.reject({
       status: 400,
@@ -25,6 +31,13 @@ exports.selectAllCommentsByArticleId = (article_id, sort_by, order) => {
     .select("*")
     .where("article_id", article_id)
     .orderBy(sort_by || "created_at", order || "desc")
+    .limit(limit || 10)
+    .modify(query => {
+      if (!p) p = 1;
+      const multiplier = limit || 10;
+      const offsetVal = (p - 1) * multiplier;
+      query.offset(offsetVal);
+    })
     .then(comments => {
       return Promise.all([comments, selectArticles(article_id)]);
     })
@@ -35,6 +48,14 @@ exports.selectAllCommentsByArticleId = (article_id, sort_by, order) => {
           status: 404,
           errMsg: "Error 404: Resource Not Found"
         });
+    });
+};
+
+exports.getTotalCommentCount = () => {
+  return connection("comments")
+    .select("*")
+    .then(comments => {
+      return comments.length;
     });
 };
 

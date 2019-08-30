@@ -1,7 +1,15 @@
 const connection = require("../db/connection");
 const { selectTopics } = require("../models/topics-model");
 
-exports.selectArticles = (article_id, sort_by, order, author, topic) => {
+exports.selectArticles = (
+  article_id,
+  sort_by,
+  order,
+  author,
+  topic,
+  limit,
+  p
+) => {
   if (order != undefined && order != "asc" && order != "desc") {
     return Promise.reject({
       status: 400,
@@ -23,6 +31,13 @@ exports.selectArticles = (article_id, sort_by, order, author, topic) => {
       }
     })
     .groupBy("articles.article_id")
+    .limit(limit || 10)
+    .modify(query => {
+      if (!p) p = 1;
+      const multiplier = limit || 10;
+      const offsetVal = (p - 1) * multiplier;
+      query.offset(offsetVal);
+    })
     .then(articles => {
       return Promise.all([articles, selectTopics()]);
     })
@@ -35,6 +50,21 @@ exports.selectArticles = (article_id, sort_by, order, author, topic) => {
           status: 404,
           errMsg: `Error 404: Resource Not Found`
         });
+    });
+};
+
+exports.getTotalArticleCount = (author, topic) => {
+  return connection("articles")
+    .select("*")
+    .modify(query => {
+      if (author) {
+        query.where("articles.author", "=", author);
+      } else if (topic) {
+        query.where("articles.topic", "=", topic);
+      }
+    })
+    .then(articles => {
+      return articles.length;
     });
 };
 

@@ -1,15 +1,24 @@
-const { selectArticles, updateVotes } = require("../models/articles-model");
+const {
+  selectArticles,
+  updateVotes,
+  getTotalArticleCount
+} = require("../models/articles-model");
 const {
   insertComment,
-  selectAllCommentsByArticleId
+  selectAllCommentsByArticleId,
+  getTotalCommentCount
 } = require("../models/comments-model");
 
 exports.getArticles = (req, res, next) => {
   const { article_id } = req.params;
-  const { sort_by, order, author, topic } = req.query;
-  selectArticles(article_id, sort_by, order, author, topic)
+  const { sort_by, order, author, topic, limit, p } = req.query;
+  selectArticles(article_id, sort_by, order, author, topic, limit, p)
     .then(articles => {
-      if (Array.isArray(articles)) res.status(200).send({ articles });
+      return Promise.all([articles, getTotalArticleCount(author, topic)]);
+    })
+    .then(([articles, total_count]) => {
+      if (Array.isArray(articles))
+        res.status(200).send({ articles, total_count });
       else res.status(200).send({ article: articles });
     })
     .catch(next);
@@ -37,10 +46,13 @@ exports.postCommentByArticleId = (req, res, next) => {
 
 exports.getAllCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
-  const { sort_by, order } = req.query;
-  selectAllCommentsByArticleId(article_id, sort_by, order)
+  const { sort_by, order, limit, p } = req.query;
+  selectAllCommentsByArticleId(article_id, sort_by, order, limit, p)
     .then(comments => {
-      res.status(200).send({ comments });
+      return Promise.all([comments, getTotalCommentCount()]);
+    })
+    .then(([comments, total_count]) => {
+      res.status(200).send({ comments, total_count });
     })
     .catch(next);
 };

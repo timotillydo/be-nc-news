@@ -12,7 +12,7 @@ describe("/api", () => {
   after(() => connection.destroy());
 
   describe("GET requests", () => {
-    describe.only("/api", () => {
+    describe("/api", () => {
       it("returns a status 200 and a json of all available endpoints", () => {
         return request
           .get("/api")
@@ -170,11 +170,60 @@ describe("/api", () => {
       });
       it("returns a status code: 400 when sent a request with an invalid author query value", () => {
         return request
-          .get("/api/articles?author=no-an-author")
+          .get("/api/articles?author=not-an-author")
           .expect(404)
           .then(({ body: { errMsg } }) => {
             expect(errMsg).to.equal("Error 404: Resource Not Found");
           });
+      });
+      it("returns a status code: 200 and a default limit of 10 articles when request sent without a limit query", () => {
+        return request
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.have.length(10);
+          });
+      });
+      it("returns a status code: 200 and a custom limit of articles when request sent with a limit query", () => {
+        return request
+          .get("/api/articles?limit=11")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.have.length(11);
+          });
+      });
+      it("returns a status code: 200 and a specific array of articles depending on the page number queried", () => {
+        return request
+          .get("/api/articles?p=2")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles[0].article_id).to.equal(11);
+          });
+      });
+      it("returns a status code: 200 and a specific array of articles depending on the combined custom limit and page number queried", () => {
+        return request
+          .get("/api/articles?limit=3&p=3")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles[0].article_id).to.equal(7);
+          });
+      });
+      it("returns a status code: 200, a total_count property and an array of articles ", () => {
+        const paths = [
+          "/api/articles",
+          "/api/articles?author=icellusedkars",
+          "/api/articles?topic=mitch",
+          "/api/articles?author=icellusedkars&topic=mitch"
+        ];
+        const promises = paths.map(path => {
+          return request
+            .get(`${path}`)
+            .expect(200)
+            .then(({ body }) => {
+              expect(body).to.have.keys("total_count", "articles");
+            });
+        });
+        return Promise.all(promises);
       });
     });
     describe("/articles/:article_id", () => {
@@ -219,7 +268,6 @@ describe("/api", () => {
           .get("/api/articles/1/comments")
           .expect(200)
           .then(({ body: { comments } }) => {
-            expect(comments).to.have.length(13);
             comments.forEach(comment => {
               expect(comment).to.have.keys(
                 "comment_id",
@@ -303,6 +351,55 @@ describe("/api", () => {
         return request
           .get("/api/articles/1/comments?invalid_query=hello")
           .expect(200);
+      });
+      it("returns a status code: 200 and a default limit of 10 comments when request sent without a limit query", () => {
+        return request
+          .get("/api/articles/1/comments")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.have.length(10);
+          });
+      });
+      it("returns a status code: 200 and a custom limit of comments when request sent with a limit query", () => {
+        return request
+          .get("/api/articles/1/comments?limit=4")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.have.length(4);
+          });
+      });
+      it("returns a status code: 200 and a specific array of comments depending on the page number queried", () => {
+        return request
+          .get("/api/articles/1/comments?limit=10&p=2")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments[0].comment_id).to.equal(12);
+          });
+      });
+      it("returns a status code: 200 and a specific array of comments depending on the combined custom limit and page number queried", () => {
+        return request
+          .get("/api/articles/1/comments?limit=3&p=3")
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments[0].comment_id).to.equal(8);
+          });
+      });
+      it("returns a status code: 200, a total_count property and an array of comments ", () => {
+        const paths = [
+          "/api/articles/1/comments",
+          "/api/articles/2/comments",
+          "/api/articles/3/comments",
+          "/api/articles/4/comments"
+        ];
+        const promises = paths.map(path => {
+          return request
+            .get(`${path}`)
+            .expect(200)
+            .then(({ body }) => {
+              expect(body).to.have.keys("total_count", "comments");
+            });
+        });
+        return Promise.all(promises);
       });
     });
   });
