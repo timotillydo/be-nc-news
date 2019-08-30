@@ -15,7 +15,7 @@
     },
     "/api/articles": {
       "description": "serves an array of article objects",
-      "queries": ["author", "topic", "sort_by", "order"],
+      "queries": ["author", "topic", "sort_by", "order", "limit", "p"],
       "exampleResponse": {
         "articles": [
           {
@@ -49,7 +49,7 @@
     },
     "/api/articles/:article_id/comments": {
       "description": "serves an array of all comments for an article",
-      "queries": ["sort_by", "order"],
+      "queries": ["sort_by", "order", "limit", "p"],
       "exampleResponse": {
         "comments": [
           {
