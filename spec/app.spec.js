@@ -12,13 +12,13 @@ describe("/api", () => {
   after(() => connection.destroy());
 
   describe("GET requests", () => {
-    describe("/api", () => {
+    describe.only("/api", () => {
       it("returns a status 200 and a json of all available endpoints", () => {
         return request
           .get("/api")
           .expect(200)
-          .then(({ body: { endpoints } }) => {
-            expect(endpoints).to.have.key("nc-news-api");
+          .then(({ body: { ncnewsapi } }) => {
+            expect(ncnewsapi).to.have.keys("GET", "POST", "PATCH", "DELETE");
           });
       });
     });
