@@ -12,6 +12,16 @@ describe("/api", () => {
   after(() => connection.destroy());
 
   describe("GET requests", () => {
+    describe("/api", () => {
+      it("returns a status 200 and a json of all available endpoints", () => {
+        return request
+          .get("/api")
+          .expect(200)
+          .then(({ body: { endpoints } }) => {
+            expect(endpoints).to.have.key("nc-news-api");
+          });
+      });
+    });
     describe("/topics", () => {
       it("returns a status code: 200 and an array of all topics", () => {
         return request
@@ -40,6 +50,130 @@ describe("/api", () => {
             expect(errMsg).to.equal(
               "Error 404: Username albert_einstein Not Found"
             );
+          });
+      });
+    });
+    describe("/articles", () => {
+      it("returns a status code: 200 and an array of all articles with key comment_count included in each article object", () => {
+        return request
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            articles.forEach(article => {
+              expect(article).to.have.keys(
+                "author",
+                "title",
+                "article_id",
+                "topic",
+                "body",
+                "created_at",
+                "votes",
+                "comment_count"
+              );
+            });
+          });
+      });
+      it("returns a status code: 200 and an array of articles default sorted by created_at when not passed a sort_by query value, also default sorted in descending order", () => {
+        return request
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy("created_at", { descending: true });
+          });
+      });
+      it("returns a status code: 200 and an array of articles sorted by any valid sort_by value passed with query default sorted in descending order", () => {
+        return request
+          .get("/api/articles?sort_by=votes")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy("votes", { descending: true });
+          });
+      });
+      it("returns a status code: 200 and an array of articles default sorted by created_at key and ascending in order when queried with order=asc", () => {
+        return request
+          .get("/api/articles?order=asc")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy("created_at", {
+              descending: false
+            });
+          });
+      });
+      it("returns a status code: 400 when sent a request with an invalid sort_by query value", () => {
+        return request
+          .get("/api/articles?sort_by=invalid_value")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 when sent a request with an invalid order query value", () => {
+        return request
+          .get("/api/articles?order=invalid_order")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request - Invalid Query");
+          });
+      });
+      it("returns a status code: 200 when sent a request with an invalid query key", () => {
+        return request
+          .get("/api/articles?invalid_query=hello")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            articles.forEach(article => {
+              expect(article).to.have.keys(
+                "author",
+                "title",
+                "article_id",
+                "topic",
+                "body",
+                "created_at",
+                "votes",
+                "comment_count"
+              );
+            });
+          });
+      });
+      it("returns status code: 200 and an array of article objects, default sorted/ordered, filtered by author if queried with a valid author", () => {
+        return request
+          .get("/api/articles?author=icellusedkars")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            articles.forEach(article => {
+              expect(article.author).to.equal("icellusedkars");
+            });
+            expect(articles).to.be.sortedBy("created_at", {
+              descending: true
+            });
+          });
+      });
+      it("returns status code: 200 and an array of article objects, default sorted/ordered, filtered by topic if queried with a valid topic", () => {
+        return request
+          .get("/api/articles?topic=mitch")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            articles.forEach(article => {
+              expect(article.topic).to.equal("mitch");
+            });
+            expect(articles).to.be.sortedBy("created_at", {
+              descending: true
+            });
+          });
+      });
+      it("returns status code: 404 and an error message when queried with a valid topic but it doesn't exist", () => {
+        return request
+          .get("/api/articles?topic=not-a-topic")
+          .expect(404)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
+          });
+      });
+      it("returns a status code: 400 when sent a request with an invalid author query value", () => {
+        return request
+          .get("/api/articles?author=no-an-author")
+          .expect(404)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
           });
       });
     });
@@ -169,130 +303,6 @@ describe("/api", () => {
         return request
           .get("/api/articles/1/comments?invalid_query=hello")
           .expect(200);
-      });
-    });
-    describe("/articles", () => {
-      it("returns a status code: 200 and an array of all articles with key comment_count included in each article object", () => {
-        return request
-          .get("/api/articles")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            articles.forEach(article => {
-              expect(article).to.have.keys(
-                "author",
-                "title",
-                "article_id",
-                "topic",
-                "body",
-                "created_at",
-                "votes",
-                "comment_count"
-              );
-            });
-          });
-      });
-      it("returns a status code: 200 and an array of articles default sorted by created_at when not passed a sort_by query value, also default sorted in descending order", () => {
-        return request
-          .get("/api/articles")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles).to.be.sortedBy("created_at", { descending: true });
-          });
-      });
-      it("returns a status code: 200 and an array of articles sorted by any valid sort_by value passed with query default sorted in descending order", () => {
-        return request
-          .get("/api/articles?sort_by=votes")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles).to.be.sortedBy("votes", { descending: true });
-          });
-      });
-      it("returns a status code: 200 and an array of articles default sorted by created_at key and ascending in order when queried with order=asc", () => {
-        return request
-          .get("/api/articles?order=asc")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles).to.be.sortedBy("created_at", {
-              descending: false
-            });
-          });
-      });
-      it("returns a status code: 400 when sent a request with an invalid sort_by query value", () => {
-        return request
-          .get("/api/articles?sort_by=invalid_value")
-          .expect(400)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Bad Request");
-          });
-      });
-      it("returns a status code: 400 when sent a request with an invalid order query value", () => {
-        return request
-          .get("/api/articles?order=invalid_order")
-          .expect(400)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Bad Request - Invalid Query");
-          });
-      });
-      it("returns a status code: 200 when sent a request with an invalid query key", () => {
-        return request
-          .get("/api/articles?invalid_query=hello")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            articles.forEach(article => {
-              expect(article).to.have.keys(
-                "author",
-                "title",
-                "article_id",
-                "topic",
-                "body",
-                "created_at",
-                "votes",
-                "comment_count"
-              );
-            });
-          });
-      });
-      it("returns status code: 200 and an array of article objects, default sorted/ordered, filtered by author if queried with a valid author", () => {
-        return request
-          .get("/api/articles?author=icellusedkars")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            articles.forEach(article => {
-              expect(article.author).to.equal("icellusedkars");
-            });
-            expect(articles).to.be.sortedBy("created_at", {
-              descending: true
-            });
-          });
-      });
-      it("returns status code: 200 and an array of article objects, default sorted/ordered, filtered by topic if queried with a valid topic", () => {
-        return request
-          .get("/api/articles?topic=mitch")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            articles.forEach(article => {
-              expect(article.topic).to.equal("mitch");
-            });
-            expect(articles).to.be.sortedBy("created_at", {
-              descending: true
-            });
-          });
-      });
-      it("returns status code: 404 and an error message when queried with a valid topic but it doesn't exist", () => {
-        return request
-          .get("/api/articles?topic=not-a-topic")
-          .expect(404)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 404: Resource Not Found");
-          });
-      });
-      it("returns a status code: 400 when sent a request with an invalid author query value", () => {
-        return request
-          .get("/api/articles?author=no-an-author")
-          .expect(404)
-          .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 404: Resource Not Found");
-          });
       });
     });
   });
@@ -538,7 +548,7 @@ describe("/api", () => {
     describe("Invalid Method On Endpoint", () => {
       describe("/api", () => {
         it("returns status code: 405 and error message: Method Not Allowed", () => {
-          const invalidMethods = ["get", "post", "put", "delete", "patch"];
+          const invalidMethods = ["post", "put", "delete", "patch"];
           const methodPromises = invalidMethods.map(method => {
             return request[method]("/api")
               .expect(405)
@@ -629,4 +639,4 @@ describe("/api", () => {
       });
     });
   });
-}).timeout(5000);
+});
