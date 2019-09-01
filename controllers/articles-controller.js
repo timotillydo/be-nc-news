@@ -1,7 +1,8 @@
 const {
   selectArticles,
   updateVotes,
-  getTotalArticleCount
+  getTotalArticleCount,
+  insertArticle
 } = require("../models/articles-model");
 const {
   insertComment,
@@ -20,6 +21,19 @@ exports.getArticles = (req, res, next) => {
       if (Array.isArray(articles))
         res.status(200).send({ articles, total_count });
       else res.status(200).send({ article: articles });
+    })
+    .catch(next);
+};
+
+exports.getAllCommentsByArticleId = (req, res, next) => {
+  const { article_id } = req.params;
+  const { sort_by, order, limit, p } = req.query;
+  selectAllCommentsByArticleId(article_id, sort_by, order, limit, p)
+    .then(comments => {
+      return Promise.all([comments, getTotalCommentCount()]);
+    })
+    .then(([comments, total_count]) => {
+      res.status(200).send({ comments, total_count });
     })
     .catch(next);
 };
@@ -44,15 +58,9 @@ exports.postCommentByArticleId = (req, res, next) => {
     .catch(next);
 };
 
-exports.getAllCommentsByArticleId = (req, res, next) => {
-  const { article_id } = req.params;
-  const { sort_by, order, limit, p } = req.query;
-  selectAllCommentsByArticleId(article_id, sort_by, order, limit, p)
-    .then(comments => {
-      return Promise.all([comments, getTotalCommentCount()]);
-    })
-    .then(([comments, total_count]) => {
-      res.status(200).send({ comments, total_count });
-    })
+exports.postArticle = (req, res, next) => {
+  const newArticle = req.body;
+  insertArticle(newArticle)
+    .then(([article]) => res.status(201).send({ article }))
     .catch(next);
 };

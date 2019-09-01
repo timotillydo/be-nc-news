@@ -24,7 +24,7 @@ exports.selectAllCommentsByArticleId = (
   if (order != undefined && order != "asc" && order != "desc") {
     return Promise.reject({
       status: 400,
-      errMsg: `Error 400: Bad Request - Invalid Query`
+      errMsg: `Error 400: Bad Request`
     });
   }
   return connection("comments")

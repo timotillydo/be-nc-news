@@ -112,7 +112,7 @@ describe("/api", () => {
           .get("/api/articles?order=invalid_order")
           .expect(400)
           .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Bad Request - Invalid Query");
+            expect(errMsg).to.equal("Error 400: Bad Request");
           });
       });
       it("returns a status code: 200 when sent a request with an invalid query key", () => {
@@ -134,7 +134,7 @@ describe("/api", () => {
             });
           });
       });
-      it("returns status code: 200 and an array of article objects, default sorted/ordered, filtered by author if queried with a valid author", () => {
+      it("returns a status code: 200 and an array of article objects, default sorted/ordered, filtered by author if queried with a valid author", () => {
         return request
           .get("/api/articles?author=icellusedkars")
           .expect(200)
@@ -147,7 +147,7 @@ describe("/api", () => {
             });
           });
       });
-      it("returns status code: 200 and an array of article objects, default sorted/ordered, filtered by topic if queried with a valid topic", () => {
+      it("returns a status code: 200 and an array of article objects, default sorted/ordered, filtered by topic if queried with a valid topic", () => {
         return request
           .get("/api/articles?topic=mitch")
           .expect(200)
@@ -160,7 +160,7 @@ describe("/api", () => {
             });
           });
       });
-      it("returns status code: 404 and an error message when queried with a valid topic but it doesn't exist", () => {
+      it("returns a status code: 404 and an error message when queried with a valid topic but it doesn't exist", () => {
         return request
           .get("/api/articles?topic=not-a-topic")
           .expect(404)
@@ -344,7 +344,7 @@ describe("/api", () => {
           .get("/api/articles/1/comments?order=invalid_order")
           .expect(400)
           .then(({ body: { errMsg } }) => {
-            expect(errMsg).to.equal("Error 400: Bad Request - Invalid Query");
+            expect(errMsg).to.equal("Error 400: Bad Request");
           });
       });
       it("returns a status code: 200 when sent a request with an invalid query key", () => {
@@ -405,7 +405,7 @@ describe("/api", () => {
   });
   describe("PATCH requests", () => {
     describe("/articles/:article_id", () => {
-      it("returns status code: 200 and the updated article when request sent (with update data in body) to update an article by it's id", () => {
+      it("returns a status code: 200 and the updated article when request sent (with update data in body) to update an article by it's id", () => {
         return request
           .patch("/api/articles/1")
           .send({ inc_votes: 22 })
@@ -532,8 +532,77 @@ describe("/api", () => {
     });
   });
   describe("POST requests", () => {
+    describe.only("/articles", () => {
+      it("returns a status code: 201 and the new article row that has been posted", () => {
+        return request
+          .post("/api/articles")
+          .send({
+            title:
+              "Trump to Miners, Loggers and Drillers: This Land Is Your Land",
+            topic: "paper",
+            author: "lurker",
+            body:
+              "The tug-of-war over America’s public lands between those who would protect them for future generations and those who would exploit them for immediate commercial gain has a long history. The two Roosevelts, Richard Nixon, Jimmy Carter and Bill Clinton were mostly sympathetic to the cause of conservation, Ronald Reagan and the second George Bush decidedly less so. But for sheer hostility to environmental values, Donald Trump has no equal. Mr.Trump arrived in the White House with little interest in conservation, his idea of nature framed largely by his golf courses.He was, to boot, almost pathologically dedicated to obliterating anything President Obama had done to reduce global warming gases, preserve open space and help endangered species. This translated into a simple operating strategy: Get rid of things the fossil fuel industry didn’t like and rubber- stamp the stuff it wanted. Hence the rollback of Obama rules limiting power plant emissions of greenhouse gases, and the proposed rollback of regulations governing methane, a powerful global warming gas. (Next up, it seems certain, is the reversal of Obama rules mandating more fuel - efficient vehicles.) Hence also the gifts over the last two years to mining and oil and gas interests of vast areas previously shielded from exploration — two national monuments in Utah, millions of acres reserved for the threatened sage grouse, much of the outer continental shelf and the long - protected coastal plain of the Arctic National Wildlife Refuge.",
+            created_at: new Date(1567284192)
+          })
+          .expect(201)
+          .then(({ body: { article } }) => {
+            expect(article).to.have.keys(
+              "article_id",
+              "title",
+              "body",
+              "votes",
+              "topic",
+              "author",
+              "created_at"
+            );
+          });
+      });
+      it("returns a status code: 400 and error message when post request sent without body", () => {
+        return request
+          .post("/api/articles")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 and error message when post request sent with a body with an invalid column header key", () => {
+        return request
+          .post("/api/articles")
+          .send({
+            title:
+              "Trump to Miners, Loggers and Drillers: This Land Is Your Land",
+            topic: "paper",
+            penguin: "lurker",
+            body:
+              "The tug-of-war over America’s public lands between those who would protect them for future generations and those who would exploit them for immediate commercial gain has a long history. The two Roosevelts, Richard Nixon, Jimmy Carter and Bill Clinton were mostly sympathetic to the cause of conservation, Ronald Reagan and the second George Bush decidedly less so. But for sheer hostility to environmental values, Donald Trump has no equal. Mr.Trump arrived in the White House with little interest in conservation, his idea of nature framed largely by his golf courses.He was, to boot, almost pathologically dedicated to obliterating anything President Obama had done to reduce global warming gases, preserve open space and help endangered species. This translated into a simple operating strategy: Get rid of things the fossil fuel industry didn’t like and rubber- stamp the stuff it wanted. Hence the rollback of Obama rules limiting power plant emissions of greenhouse gases, and the proposed rollback of regulations governing methane, a powerful global warming gas. (Next up, it seems certain, is the reversal of Obama rules mandating more fuel - efficient vehicles.) Hence also the gifts over the last two years to mining and oil and gas interests of vast areas previously shielded from exploration — two national monuments in Utah, millions of acres reserved for the threatened sage grouse, much of the outer continental shelf and the long - protected coastal plain of the Arctic National Wildlife Refuge.",
+            created_at: new Date(1567284192)
+          })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 and error message when post request sent with a body with an valid column header key but the datatype is invalid for that column", () => {
+        return request
+          .post("/api/articles")
+          .send({
+            title:
+              "Trump to Miners, Loggers and Drillers: This Land Is Your Land",
+            topic: "paper",
+            author: null,
+            body:
+              "The tug-of-war over America’s public lands between those who would protect them for future generations and those who would exploit them for immediate commercial gain has a long history. The two Roosevelts, Richard Nixon, Jimmy Carter and Bill Clinton were mostly sympathetic to the cause of conservation, Ronald Reagan and the second George Bush decidedly less so. But for sheer hostility to environmental values, Donald Trump has no equal. Mr.Trump arrived in the White House with little interest in conservation, his idea of nature framed largely by his golf courses.He was, to boot, almost pathologically dedicated to obliterating anything President Obama had done to reduce global warming gases, preserve open space and help endangered species. This translated into a simple operating strategy: Get rid of things the fossil fuel industry didn’t like and rubber- stamp the stuff it wanted. Hence the rollback of Obama rules limiting power plant emissions of greenhouse gases, and the proposed rollback of regulations governing methane, a powerful global warming gas. (Next up, it seems certain, is the reversal of Obama rules mandating more fuel - efficient vehicles.) Hence also the gifts over the last two years to mining and oil and gas interests of vast areas previously shielded from exploration — two national monuments in Utah, millions of acres reserved for the threatened sage grouse, much of the outer continental shelf and the long - protected coastal plain of the Arctic National Wildlife Refuge.",
+            created_at: new Date(1567284192)
+          })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+    });
     describe("/articles/:article_id/comments", () => {
-      it("returns status code: 201 and the new row that has been posted", () => {
+      it("returns a status code: 201 and the new comment row that has been posted", () => {
         return request
           .post("/api/articles/1/comments")
           .send({ username: "lurker", body: "that article was great!" })
@@ -569,7 +638,7 @@ describe("/api", () => {
             expect(errMsg).to.equal("Error 400: Bad Request");
           });
       });
-      it("returns a status code: 400 and error message when request sent without body", () => {
+      it("returns a status code: 400 and error message when post request sent without body", () => {
         return request
           .post("/api/articles/1/comments")
           .expect(400)
@@ -605,7 +674,7 @@ describe("/api", () => {
   });
   describe("DELETE requests", () => {
     describe("/comments/:comment_id", () => {
-      it("returns status code: 204 and can delete houses referenced by other tables", () => {
+      it("returns a status code: 204 and can delete houses referenced by other tables", () => {
         const comment_ids = [1, 2, 3, 4, 5, 6, 7, 8];
         const promises = comment_ids.map(comment_id => {
           request.delete(`/api/comments/${comment_id}`).expect(204);
@@ -633,7 +702,7 @@ describe("/api", () => {
 
   describe("Misc Error Handling", () => {
     describe("Endpoint Not Valid", () => {
-      it("returns status code: 404 and error message: Route Not Found, when request sent to path that doesn't exist", () => {
+      it("returns a status code: 404 and error message: Route Not Found, when request sent to path that doesn't exist", () => {
         return request
           .get("/api/tooooopics")
           .expect(404)
@@ -644,7 +713,7 @@ describe("/api", () => {
     });
     describe("Invalid Method On Endpoint", () => {
       describe("/api", () => {
-        it("returns status code: 405 and error message: Method Not Allowed", () => {
+        it("returns a status code: 405 and error message: Method Not Allowed", () => {
           const invalidMethods = ["post", "put", "delete", "patch"];
           const methodPromises = invalidMethods.map(method => {
             return request[method]("/api")
@@ -656,7 +725,7 @@ describe("/api", () => {
           return Promise.all(methodPromises);
         });
         describe("/topics", () => {
-          it("returns status code: 405 and error message: Method Not Allowed", () => {
+          it("returns a status code: 405 and error message: Method Not Allowed", () => {
             const invalidMethods = ["post", "put", "delete", "patch"];
             const methodPromises = invalidMethods.map(method => {
               return request[method]("/api/topics")
@@ -669,8 +738,8 @@ describe("/api", () => {
           });
         });
         describe("/articles", () => {
-          it("returns status code: 405 and error message: Method Not Allowed", () => {
-            const invalidMethods = ["post", "put", "delete", "patch"];
+          it("returns a status code: 405 and error message: Method Not Allowed", () => {
+            const invalidMethods = ["put", "delete", "patch"];
             const methodPromises = invalidMethods.map(method => {
               return request[method]("/api/articles")
                 .expect(405)
@@ -681,7 +750,7 @@ describe("/api", () => {
             return Promise.all(methodPromises);
           });
           describe("/:article_id", () => {
-            it("returns status code: 405 and error message: Method Not Allowed", () => {
+            it("returns a status code: 405 and error message: Method Not Allowed", () => {
               const invalidMethods = ["post", "put", "delete"];
               const methodPromises = invalidMethods.map(method => {
                 return request[method]("/api/articles/:article_id")
@@ -694,7 +763,7 @@ describe("/api", () => {
             });
           });
           describe("/:article_id/comments", () => {
-            it("returns status code: 405 and error message: Method Not Allowed", () => {
+            it("returns a status code: 405 and error message: Method Not Allowed", () => {
               const invalidMethods = ["put", "delete", "patch"];
               const methodPromises = invalidMethods.map(method => {
                 return request[method]("/api/articles/:article_id/comments")
@@ -708,7 +777,7 @@ describe("/api", () => {
           });
         });
         describe("/users/:username", () => {
-          it("returns status code: 405 and error message: Method Not Allowed", () => {
+          it("returns a status code: 405 and error message: Method Not Allowed", () => {
             const invalidMethods = ["post", "put", "delete", "patch"];
             const methodPromises = invalidMethods.map(method => {
               return request[method]("/api/users/:username")
@@ -721,7 +790,7 @@ describe("/api", () => {
           });
         });
         describe("/comments/:comment_id", () => {
-          it("returns status code: 405 and error message: Method Not Allowed", () => {
+          it("returns a status code: 405 and error message: Method Not Allowed", () => {
             const invalidMethods = ["get", "post", "put"];
             const methodPromises = invalidMethods.map(method => {
               return request[method]("/api/comments/:comment_id")

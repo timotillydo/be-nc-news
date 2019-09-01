@@ -3,6 +3,7 @@ const { invalidMethodHandler } = require("../errors/index");
 const {
   getArticles,
   patchArticleById,
+  postArticle,
   postCommentByArticleId,
   getAllCommentsByArticleId
 } = require("../controllers/articles-controller");
@@ -10,6 +11,7 @@ const {
 articlesRouter
   .route("/")
   .get(getArticles)
+  .post(postArticle)
   .all(invalidMethodHandler);
 
 articlesRouter

@@ -11,21 +11,3 @@ exports.psqlErrorHandler = (err, req, res, next) => {
     next(err);
   }
 };
-
-//   } else if (notFoundCodes.includes(err.code)) {
-//     res.status(404).send({
-//       errMsg: "Error 404: Resourse Not Found"
-//     });
-//   } else {
-//     next(err);
-//   }
-// };
-
-//   } else if (unproccessableCodes.includes(err.code)) {
-//   res.status(422).send({
-//     errMsg: "Error 422: Unprocessable Entity"
-//   });
-// } else {
-//   next(err);
-// }
-// };
