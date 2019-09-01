@@ -69,12 +69,25 @@
         ]
       }
     },
+    "/api/users": {
+      "description": "serves an array of users",
+      "queries": [],
+      "exampleResponse": [
+        {
+          "username": {
+            "username": "rogersop",
+            "avatar_url": "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4",
+            "name": "paul"
+          }
+        }
+      ]
+    },
     "/api/users/:username": {
       "description": "serves a single user",
       "queries": [],
       "exampleResponse": {
         "username": {
-          "username": "rogersop ",
+          "username": "rogersop",
           "avatar_url": "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4",
           "name": "paul"
         }
@@ -125,11 +138,46 @@
           "votes": 2
         }
       }
+    },
+    "/api/articles": {
+      "description": "posts a new article and serves the posted article object",
+      "queries": [],
+      "exampleResponse": {
+        "article": {
+          "article_id": 8,
+          "title": "Trump to Miners, Loggers and Drillers: This Land Is Your Land",
+          "topic": "paper",
+          "author": "lurker",
+          "body": "The tug-of-war over America’s public lands between those who would protect them for future generations and those who would exploit them for immediate commercial gain has a long history. The two Roosevelts, Richard Nixon, Jimmy Carter and Bill Clinton were mostly sympathetic to the cause of conservation, Ronald Reagan and the second George Bush decidedly less so. But for sheer hostility to environmental values, Donald Trump has no equal. Mr.Trump arrived in the White House with little interest in conservation, his idea of nature framed largely by his golf courses.He was, to boot, almost pathologically dedicated to obliterating anything President Obama had done to reduce global warming gases, preserve open space and help endangered species. This translated into a simple operating strategy: Get rid of things the fossil fuel industry didn’t like and rubber- stamp the stuff it wanted. Hence the rollback of Obama rules limiting power plant emissions of greenhouse gases, and the proposed rollback of regulations governing methane, a powerful global warming gas. (Next up, it seems certain, is the reversal of Obama rules mandating more fuel - efficient vehicles.) Hence also the gifts over the last two years to mining and oil and gas interests of vast areas previously shielded from exploration — two national monuments in Utah, millions of acres reserved for the threatened sage grouse, much of the outer continental shelf and the long - protected coastal plain of the Arctic National Wildlife Refuge.",
+          "created_at": 1567284192
+        }
+      }
+    },
+    "/api/topics": {
+      "description": "posts a new topic and serves the posted topic object",
+      "queries": [],
+      "exampleResponse": {
+        "topic": { "slug": "rainbows", "description": "Colourful shtuff!" }
+      }
+    },
+    "/api/users": {
+      "description": "posts a new user and serves the posted user object",
+      "queries": [],
+      "exampleResponse": {
+        "user": {
+          "username": "greenfudge",
+          "avatar_url": "http://images-gmi-pmc.edge-generalmills.com/f01806b7-eca4-4953-83cc-4203eaff905d.jpg",
+          "name": "frank"
+        }
+      }
     }
   },
   "DELETE": {
     "/api/comments/:comment_id": {
       "description": "deletes a comment from an article"
     }
+  },
+  "/articles/:article_id": {
+    "description": "deletes an article and any comments that refer to that article"
   }
 }
