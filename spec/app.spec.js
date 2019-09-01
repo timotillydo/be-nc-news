@@ -13,7 +13,7 @@ describe("/api", () => {
 
   describe("GET requests", () => {
     describe("/api", () => {
-      it("returns a status 200 and a json of all available endpoints", () => {
+      it("returns a status code: 200 and a json of all available endpoints", () => {
         return request
           .get("/api")
           .expect(200)
@@ -532,7 +532,7 @@ describe("/api", () => {
     });
   });
   describe("POST requests", () => {
-    describe.only("/articles", () => {
+    describe("/articles", () => {
       it("returns a status code: 201 and the new article row that has been posted", () => {
         return request
           .post("/api/articles")
@@ -674,7 +674,7 @@ describe("/api", () => {
   });
   describe("DELETE requests", () => {
     describe("/comments/:comment_id", () => {
-      it("returns a status code: 204 and can delete houses referenced by other tables", () => {
+      it("returns a status code: 204", () => {
         const comment_ids = [1, 2, 3, 4, 5, 6, 7, 8];
         const promises = comment_ids.map(comment_id => {
           request.delete(`/api/comments/${comment_id}`).expect(204);
@@ -692,6 +692,31 @@ describe("/api", () => {
       it("returns a status code: 400 and error message when request sent for a deletion of comment where the comment_id doesn't exist", () => {
         return request
           .delete("/api/comments/qwwbdcflbqrlfbjh")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+    });
+    describe("/articles/:article_id", () => {
+      it("returns a status code: 204 and can delete all comments referencing that article", () => {
+        const article_ids = [1, 2, 3, 4, 5, 6, 7, 8];
+        const promises = article_ids.map(article_id => {
+          request.delete(`/api/articles/${article_id}`).expect(204);
+        });
+        return Promise.all(promises);
+      });
+      it("returns a status code: 404 and error message when request sent for a deletion of article where the article_id doesn't exist", () => {
+        return request
+          .delete("/api/articles/99999")
+          .expect(404)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 404: Resource Not Found");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent for a deletion of article where the article_id doesn't exist", () => {
+        return request
+          .delete("/api/articles/qwwbdcflbqrlfbjh")
           .expect(400)
           .then(({ body: { errMsg } }) => {
             expect(errMsg).to.equal("Error 400: Bad Request");
@@ -751,7 +776,7 @@ describe("/api", () => {
           });
           describe("/:article_id", () => {
             it("returns a status code: 405 and error message: Method Not Allowed", () => {
-              const invalidMethods = ["post", "put", "delete"];
+              const invalidMethods = ["post", "put"];
               const methodPromises = invalidMethods.map(method => {
                 return request[method]("/api/articles/:article_id")
                   .expect(405)

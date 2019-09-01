@@ -5,7 +5,8 @@ const {
   patchArticleById,
   postArticle,
   postCommentByArticleId,
-  getAllCommentsByArticleId
+  getAllCommentsByArticleId,
+  deleteArticleById
 } = require("../controllers/articles-controller");
 
 articlesRouter
@@ -18,6 +19,7 @@ articlesRouter
   .route("/:article_id")
   .get(getArticles)
   .patch(patchArticleById)
+  .delete(deleteArticleById)
   .all(invalidMethodHandler);
 
 articlesRouter

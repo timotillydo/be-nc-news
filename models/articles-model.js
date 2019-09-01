@@ -53,7 +53,7 @@ exports.selectArticles = (
     });
 };
 
-exports.getTotalArticleCount = (author, topic) => {
+exports.totalArticleCount = (author, topic) => {
   return connection("articles")
     .select("*")
     .modify(query => {
@@ -96,4 +96,18 @@ exports.insertArticle = newArticle => {
     .insert(newArticle)
     .returning("*")
     .then(article => article);
+};
+
+exports.removeArticleById = article_id => {
+  return connection("articles")
+    .where("article_id", article_id)
+    .del()
+    .then(deleteCount => {
+      if (deleteCount < 1)
+        return Promise.reject({
+          status: 404,
+          errMsg: "Error 404: Resource Not Found"
+        });
+      else return deleteCount;
+    });
 };

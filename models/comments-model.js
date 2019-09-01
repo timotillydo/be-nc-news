@@ -51,7 +51,7 @@ exports.selectAllCommentsByArticleId = (
     });
 };
 
-exports.getTotalCommentCount = () => {
+exports.totalCommentCount = () => {
   return connection("comments")
     .select("*")
     .then(comments => {
