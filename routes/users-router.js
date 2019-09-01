@@ -1,6 +1,16 @@
 const usersRouter = require("express").Router();
 const { invalidMethodHandler } = require("../errors/index");
-const { getUserByUsername } = require("../controllers/users-controller");
+const {
+  getUsers,
+  getUserByUsername,
+  postUser
+} = require("../controllers/users-controller");
+
+usersRouter
+  .route("/")
+  .get(getUsers)
+  .post(postUser)
+  .all(invalidMethodHandler);
 
 usersRouter
   .route("/:username")

@@ -1,5 +1,11 @@
 const connection = require("../db/connection");
 
+exports.selectUsers = () => {
+  return connection("users")
+    .select("*")
+    .then(users => users);
+};
+
 exports.selectUserByUsername = username => {
   return connection("users")
     .select("*")
@@ -12,4 +18,11 @@ exports.selectUserByUsername = username => {
         });
       } else return user[0];
     });
+};
+
+exports.insertUser = newUser => {
+  return connection("users")
+    .insert(newUser)
+    .returning("*")
+    .then(user => user);
 };

@@ -29,7 +29,22 @@ describe("/api", () => {
           .expect(200)
           .then(({ body: { topics } }) => {
             expect(topics).to.have.length(3);
-            expect(topics[0]).to.have.keys("slug", "description");
+            topics.forEach(topic => {
+              expect(topic).to.have.keys("slug", "description");
+            });
+          });
+      });
+    });
+    describe("/users", () => {
+      it("returns a status code: 200 and an array of all users", () => {
+        return request
+          .get("/api/users")
+          .expect(200)
+          .then(({ body: { users } }) => {
+            expect(users).to.have.length(4);
+            users.forEach(user => {
+              expect(user).to.have.keys("username", "avatar_url", "name");
+            });
           });
       });
     });
@@ -715,6 +730,58 @@ describe("/api", () => {
           });
       });
     });
+    describe("/users", () => {
+      it("returns a status code: 201 and a copy of the new user posted", () => {
+        return request
+          .post("/api/users")
+          .send({
+            username: "greenfudge",
+            avatar_url:
+              "http://images-gmi-pmc.edge-generalmills.com/f01806b7-eca4-4953-83cc-4203eaff905d.jpg",
+            name: "frank"
+          })
+          .then(({ body: { user } }) => {
+            expect(user).to.have.keys("username", "avatar_url", "name");
+          });
+      });
+      it("returns a status code: 400 and error message when post request sent without body", () => {
+        return request
+          .post("/api/users")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent with a body with an invalid column header key", () => {
+        return request
+          .post("/api/users")
+          .send({
+            username: "greenfudge",
+            avatar_url:
+              "http://images-gmi-pmc.edge-generalmills.com/f01806b7-eca4-4953-83cc-4203eaff905d.jpg",
+            my_name: "frank"
+          })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent with a body with an extra key", () => {
+        return request
+          .post("/api/users")
+          .send({
+            username: "greenfudge",
+            avatar_url:
+              "http://images-gmi-pmc.edge-generalmills.com/f01806b7-eca4-4953-83cc-4203eaff905d.jpg",
+            name: "frank",
+            extra_key: "extra extra"
+          })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+    });
   });
   describe("DELETE requests", () => {
     describe("/comments/:comment_id", () => {
@@ -845,17 +912,30 @@ describe("/api", () => {
             });
           });
         });
-        describe("/users/:username", () => {
+        describe("/users", () => {
           it("returns a status code: 405 and error message: Method Not Allowed", () => {
-            const invalidMethods = ["post", "put", "delete", "patch"];
+            const invalidMethods = ["put", "delete", "patch"];
             const methodPromises = invalidMethods.map(method => {
-              return request[method]("/api/users/:username")
+              return request[method]("/api/users")
                 .expect(405)
                 .then(({ body: { errMsg } }) => {
                   expect(errMsg).to.equal("Error 405: Method Not Allowed");
                 });
             });
             return Promise.all(methodPromises);
+          });
+          describe("/users/:username", () => {
+            it("returns a status code: 405 and error message: Method Not Allowed", () => {
+              const invalidMethods = ["post", "put", "delete", "patch"];
+              const methodPromises = invalidMethods.map(method => {
+                return request[method]("/api/users/:username")
+                  .expect(405)
+                  .then(({ body: { errMsg } }) => {
+                    expect(errMsg).to.equal("Error 405: Method Not Allowed");
+                  });
+              });
+              return Promise.all(methodPromises);
+            });
           });
         });
         describe("/comments/:comment_id", () => {
