@@ -671,6 +671,50 @@ describe("/api", () => {
           });
       });
     });
+    describe("/topics", () => {
+      it("returns a status code: 201 and a copy of the new topic sent to be posted", () => {
+        return request
+          .post("/api/topics")
+          .send({ slug: "rainbows", description: "Colourful shtuff!" })
+          .expect(201)
+          .then(({ body: { topic } }) => {
+            expect(topic).to.have.keys("slug", "description");
+          });
+      });
+      it("returns a status code: 400 and error message when post request sent without body", () => {
+        return request
+          .post("/api/topics")
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent with a body with an invalid column header key", () => {
+        return request
+          .post("/api/topics")
+          .send({
+            slug: "rainforests",
+            invalid_column: "awesome!"
+          })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+      it("returns a status code: 400 and error message when request sent with a body with an extra key", () => {
+        return request
+          .post("/api/topics")
+          .send({
+            slug: "rainforests",
+            description: "this is a great description",
+            extra_key: "this should'nt work"
+          })
+          .expect(400)
+          .then(({ body: { errMsg } }) => {
+            expect(errMsg).to.equal("Error 400: Bad Request");
+          });
+      });
+    });
   });
   describe("DELETE requests", () => {
     describe("/comments/:comment_id", () => {
@@ -751,7 +795,7 @@ describe("/api", () => {
         });
         describe("/topics", () => {
           it("returns a status code: 405 and error message: Method Not Allowed", () => {
-            const invalidMethods = ["post", "put", "delete", "patch"];
+            const invalidMethods = ["put", "delete", "patch"];
             const methodPromises = invalidMethods.map(method => {
               return request[method]("/api/topics")
                 .expect(405)

@@ -7,3 +7,10 @@ exports.selectTopics = () => {
       return topics;
     });
 };
+
+exports.insertTopic = newTopic => {
+  return connection("topics")
+    .insert(newTopic)
+    .returning("*")
+    .then(topic => topic);
+};
