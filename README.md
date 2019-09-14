@@ -10,11 +10,19 @@ The entire API has been built with Test-Driven Development practices.
 * [Prerequisites](#Prerequisites)
   * [Dependencies & Minimum Versions](#Dependencies-&-Minimum-Versions)
 * [Getting Started](#Getting-Started)
-  * [Setting Up The API Locally](#Setting-Up-The-API-Locally)
+  * [Cloning This Repository](#Cloning-This-Repository)
   * [Installing Dependencies](#Installing-Dependencies)
   * [Installing PSQL](#Installing-PSQL)
-
-Setting Up A Local Knex File
+* [Setting Up The API Locally](#Setting-Up-The-API-Locally)
+  * [Writing A Local Knex File](#Writing-A-Local-Knex-File)
+  * [Seeding A Local Database](#Seeding-A-Local-Database)
+* [Testing](#Testing)
+  * [Testing Endpoints](#Testing-Endpoints)
+  * [Testing the API with Insomnia](#Testing-the-API-with-Insomnia)
+* [Endpoints](#Endpoints)
+* [Hosting](#Hosting)
+* [Authors](#Authors)
+* [Acknowledgments](#Acknowledgments)
 
 ## Hosted Version
 
@@ -43,7 +51,7 @@ This project has been built on [Ubuntu](https://ubuntu.com) (18.04.3 LTS) but is
 
 ## Getting Started
 
-### Cloning The Repository
+### Cloning This Repository
 
 _See 'Deployment' for notes on how to deploy the project on a live system._
 
