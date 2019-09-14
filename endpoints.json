@@ -175,9 +175,9 @@
   "DELETE": {
     "/api/comments/:comment_id": {
       "description": "deletes a comment from an article"
+    },
+    "/articles/:article_id": {
+      "description": "deletes an article and any comments that refer to that article"
     }
-  },
-  "/articles/:article_id": {
-    "description": "deletes an article and any comments that refer to that article"
   }
 }
