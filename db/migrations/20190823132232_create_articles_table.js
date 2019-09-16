@@ -18,7 +18,7 @@ exports.up = function(knex) {
       .string("author")
       .references("users.username")
       .notNullable();
-    articlesTable.timestamp("created_at");
+    articlesTable.timestamp("created_at").defaultTo(knex.fn.now());
   });
 };
 
