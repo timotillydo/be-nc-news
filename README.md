@@ -113,7 +113,15 @@ sudo -u postgres createdb $USER
 ```
 psql
 ```
-* You can connect to the two 
+* You can connect to the two databases by 
+```
+\c <nc_news_test OR nc_news>
+```
+* For PSQL terminal commands type: 
+
+```
+help
+```
 
 ## Setting Up The API Locally
 
