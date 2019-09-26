@@ -51,9 +51,10 @@ exports.selectAllCommentsByArticleId = (
     });
 };
 
-exports.totalCommentCount = () => {
+exports.totalCommentCount = article_id => {
   return connection("comments")
     .select("*")
+    .where("article_id", article_id)
     .then(comments => {
       return comments.length;
     });

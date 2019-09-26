@@ -295,6 +295,14 @@ describe("/api", () => {
             });
           });
       });
+      it("returns a status code: 200 and an array of all comments for a valid article_id with a total_count key for the number of comment associated with the article_id provided", () => {
+        return request
+          .get("/api/articles/1/comments")
+          .expect(200)
+          .then(({ body: { total_count } }) => {
+            expect(total_count).to.equal(13);
+          });
+      });
       it("returns a status code: 200 and an empty array for a valid article_id without any comments", () => {
         return request
           .get("/api/articles/2/comments")

@@ -31,7 +31,7 @@ exports.getAllCommentsByArticleId = (req, res, next) => {
   const { sort_by, order, limit, p } = req.query;
   selectAllCommentsByArticleId(article_id, sort_by, order, limit, p)
     .then(comments => {
-      return Promise.all([comments, totalCommentCount()]);
+      return Promise.all([comments, totalCommentCount(article_id)]);
     })
     .then(([comments, total_count]) => {
       res.status(200).send({ comments, total_count });
