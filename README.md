@@ -101,21 +101,32 @@ For Ubuntu:
 ```
 sudo apt-get update
 
-sudo apt-get install postgresql postgresql-contrib
+sudo apt-get install postgresql
 ```
 
-- Then run the following commands to create a database user for Postgres:
+- Postgres will run by user postgres, we will need to set the password for this new postgres user:
 
 ```
-sudo -u postgres createuser --superuser $USER
-
-sudo -u postgres createdb $USER
-```
-
-- To enter the terminal application run this in your terminal:
+sudo passwd postgres
 
 ```
-psql
+
+- Restart/Open a new terminal
+- Restart the postgres server:
+```
+sudo service postgresql start
+```
+
+- Connect to postgres server as postgres user:
+
+```
+sudo -u postgres psql
+```
+
+- Create a new user:
+```
+su - postgres
+sudo -u postgres createuser <username>
 ```
 
 - You can connect to either the test or dev database by
